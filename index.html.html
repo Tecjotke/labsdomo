@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratorio Práctico – Sophos Certified Engineer</title>
+<style>
+  :root {
+    --blue-dark: #003057;
+    --blue-mid: #005487;
+    --blue-accent: #0070AD;
+    --blue-light: #e8f4fb;
+    --sophos-teal: #00B5B8;
+    --sophos-teal-light: #e0f8f8;
+    --green: #28a745;
+    --green-light: #d4edda;
+    --yellow: #ffc107;
+    --yellow-light: #fff3cd;
+    --red: #dc3545;
+    --red-light: #f8d7da;
+    --gray-50: #f8f9fa;
+    --gray-100: #f0f2f5;
+    --gray-200: #e2e6ea;
+    --gray-300: #ced4da;
+    --gray-700: #495057;
+    --gray-900: #212529;
+    --font: 'Segoe UI', system-ui, sans-serif;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(0,48,87,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--gray-100);
+    color: var(--gray-900);
+    min-height: 100vh;
+  }
+
+  /* ── LOGIN SCREEN ── */
+  .login-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #003057 0%, #0070AD 100%);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-box {
+    background: #fff;
+    border-radius: 18px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    text-align: center;
+    animation: loginIn 0.4s cubic-bezier(.175,.885,.32,1.275);
+  }
+  @keyframes loginIn {
+    from { opacity: 0; transform: scale(0.88) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .login-logo {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, #003057, #0070AD);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 24px rgba(0,112,173,0.35);
+  }
+  .login-box h2 { font-size: 1.4rem; font-weight: 700; color: var(--blue-dark); margin-bottom: 6px; }
+  .login-box p  { font-size: 0.87rem; color: var(--gray-700); margin-bottom: 28px; line-height: 1.5; }
+  .login-field { margin-bottom: 16px; text-align: left; }
+  .login-field label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--blue-dark);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .login-field input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: var(--font);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .login-field input:focus { border-color: var(--blue-accent); }
+  .login-btn {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, #003057, #0070AD);
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    margin-top: 6px;
+    letter-spacing: 0.3px;
+  }
+  .login-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+  .login-error {
+    color: var(--red);
+    font-size: 0.82rem;
+    margin-top: 10px;
+    min-height: 20px;
+  }
+  .login-badge-row {
+    display: flex; gap: 8px; justify-content: center; margin-top: 24px; flex-wrap: wrap;
+  }
+  .login-badge {
+    background: var(--blue-light);
+    color: var(--blue-accent);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-accent) 100%);
+    color: #fff;
+    padding: 0;
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: auto;
+    padding: 28px 32px 20px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .header-logo {
+    width: 52px; height: 52px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0;
+  }
+  .header-text { flex: 1; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.3px; }
+  .header p  { font-size: 0.88rem; opacity: 0.82; margin-top: 4px; }
+  .badge-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .badge {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── TIMER WIDGET ── */
+  .timer-bar {
+    background: rgba(0,0,0,0.25);
+    padding: 10px 32px;
+  }
+  .timer-bar-inner {
+    max-width: 1100px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .timer-display {
+    font-size: 1.9rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    min-width: 130px;
+  }
+  .timer-display.running { color: #7ef7b0; }
+  .timer-display.stopped { color: #ffd77a; }
+  .timer-label {
+    color: rgba(255,255,255,0.75);
+    font-size: 0.82rem;
+    flex: 1;
+  }
+  .timer-label strong { display: block; color: #fff; font-size: 0.9rem; }
+  .timer-btn {
+    padding: 8px 18px;
+    border-radius: 7px;
+    border: 2px solid rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .timer-btn:hover { background: rgba(255,255,255,0.25); }
+  .timer-btn.primary {
+    background: var(--sophos-teal);
+    border-color: var(--sophos-teal);
+  }
+  .timer-btn.primary:hover { background: #009fa2; }
+  .timer-participant {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.82rem;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 5px 12px;
+  }
+  .timer-participant strong { color: #fff; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar-wrap {
+    background: var(--blue-dark);
+    padding: 0 32px 16px;
+  }
+  .progress-bar-inner { max-width: 1100px; margin: auto; }
+  .progress-label {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.78rem;
+    margin-bottom: 5px;
+    display: flex; justify-content: space-between;
+  }
+  .progress-track {
+    height: 6px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--sophos-teal);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* ── LAYOUT ── */
+  .main {
+    max-width: 1100px;
+    margin: 28px auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 22px;
+    align-items: start;
+  }
+
+  /* ── SIDEBAR NAV ── */
+  .sidebar {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    position: sticky;
+    top: 20px;
+  }
+  .sidebar-title {
+    background: var(--blue-dark);
+    color: #fff;
+    padding: 13px 16px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--gray-100);
+    transition: background 0.15s;
+    font-size: 0.84rem;
+    color: var(--gray-700);
+  }
+  .nav-item:hover { background: var(--blue-light); }
+  .nav-item.active {
+    background: var(--blue-light);
+    color: var(--blue-accent);
+    font-weight: 600;
+    border-left: 3px solid var(--blue-accent);
+  }
+  .nav-icon {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
+  .nav-check {
+    margin-left: auto;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--gray-300);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; flex-shrink: 0;
+  }
+  .nav-check.done { background: var(--green); border-color: var(--green); color: #fff; }
+
+  /* ── CONTENT PANELS ── */
+  .content { min-width: 0; }
+  .phase-panel { display: none; }
+  .phase-panel.active { display: block; }
+
+  /* ── PHASE HEADER ── */
+  .phase-header {
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+  }
+  .phase-header::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .phase-header-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .phase-header h2 { font-size: 1.3rem; font-weight: 700; }
+  .phase-header p  { font-size: 0.86rem; opacity: 0.85; margin-top: 5px; max-width: 540px; }
+  .phase-meta { display: flex; gap: 14px; margin-top: 12px; flex-wrap: wrap; }
+  .phase-meta-item {
+    background: rgba(255,255,255,0.18);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .ph-blue   { background: linear-gradient(135deg, #005487, #0070AD); }
+  .ph-teal   { background: linear-gradient(135deg, #007A7C, #00B5B8); }
+  .ph-purple { background: linear-gradient(135deg, #5a3e7a, #8e63c6); }
+  .ph-green  { background: linear-gradient(135deg, #1a6e3c, #28a745); }
+
+  /* ── TASK CARD ── */
+  .task-card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+    transition: box-shadow 0.2s;
+  }
+  .task-card:hover { box-shadow: 0 4px 20px rgba(0,48,87,0.14); }
+  .task-card.completed { border-left: 4px solid var(--green); }
+
+  .task-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .task-num {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem; font-weight: 700;
+    flex-shrink: 0; color: #fff;
+  }
+  .task-title { font-weight: 600; font-size: 0.92rem; flex: 1; }
+  .task-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-left: auto; }
+  .tag { font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .tag-required { background: #fdecea; color: #c0392b; }
+  .tag-optional { background: #e8f4fb; color: var(--blue-accent); }
+  .tag-advanced { background: #f3e8ff; color: #6c3483; }
+  .task-chevron { font-size: 11px; color: var(--gray-300); transition: transform 0.2s; }
+  .task-card.open .task-chevron { transform: rotate(90deg); }
+
+  .task-body { display: none; padding: 0 18px 18px; border-top: 1px solid var(--gray-200); }
+  .task-card.open .task-body { display: block; }
+
+  .task-desc {
+    font-size: 0.86rem; color: var(--gray-700);
+    margin: 12px 0 14px; line-height: 1.6;
+  }
+
+  /* ── STEPS ── */
+  .steps { list-style: none; }
+  .step-item {
+    display: flex; gap: 11px;
+    padding: 9px 0;
+    border-bottom: 1px dashed var(--gray-200);
+    align-items: flex-start;
+    font-size: 0.85rem; line-height: 1.55;
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--blue-light);
+    color: var(--blue-accent);
+    font-size: 0.7rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  code {
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 0.82em;
+    color: var(--blue-dark);
+  }
+  a { color: var(--blue-accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 7px;
+    padding: 11px 14px;
+    margin: 12px 0;
+    font-size: 0.83rem; line-height: 1.55;
+    display: flex; gap: 9px; align-items: flex-start;
+  }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .callout-info    { background: var(--blue-light);   border-left: 3px solid var(--blue-accent); }
+  .callout-warning { background: var(--yellow-light); border-left: 3px solid var(--yellow); }
+  .callout-success { background: var(--green-light);  border-left: 3px solid var(--green); }
+  .callout-danger  { background: var(--red-light);    border-left: 3px solid var(--red); }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; margin: 10px 0; }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 6px 0; font-size: 0.84rem;
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-box {
+    width: 17px; height: 17px;
+    border-radius: 4px;
+    border: 2px solid var(--gray-300);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; margin-top: 1px;
+  }
+  .check-item.checked .check-box { background: var(--green); border-color: var(--green); color: #fff; font-size: 10px; }
+  .check-item.checked .check-label { text-decoration: line-through; color: var(--gray-300); }
+
+  /* ── HEALTH STATES ── */
+  .health-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
+  .health-card { border-radius: 8px; padding: 12px; text-align: center; font-size: 0.81rem; }
+  .health-green  { background: var(--green-light);  border: 1px solid #b8dfc1; }
+  .health-yellow { background: var(--yellow-light); border: 1px solid #ffd97d; }
+  .health-red    { background: var(--red-light);    border: 1px solid #f5c0c4; }
+  .health-dot { width: 18px; height: 18px; border-radius: 50%; margin: 0 auto 7px; }
+  .dot-green  { background: var(--green);  box-shadow: 0 0 8px rgba(40,167,69,0.5); }
+  .dot-yellow { background: var(--yellow); box-shadow: 0 0 8px rgba(255,193,7,0.5); }
+  .dot-red    { background: var(--red);    box-shadow: 0 0 8px rgba(220,53,69,0.5); }
+  .health-title { font-weight: 700; margin-bottom: 3px; }
+
+  /* ── COMPLETE BUTTON ── */
+  .complete-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-top: 12px;
+    padding: 8px 18px;
+    border-radius: 6px; border: none; cursor: pointer;
+    font-size: 0.82rem; font-weight: 600;
+    background: var(--green); color: #fff;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .complete-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .complete-btn.done { background: var(--gray-200); color: var(--gray-700); }
+
+  /* ── SCREENSHOT UPLOAD ── */
+  .screenshot-section {
+    margin-top: 14px;
+    padding: 14px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+  }
+  .screenshot-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--blue-dark);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .screenshot-upload-area {
+    border: 2px dashed var(--gray-300);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    font-size: 0.82rem;
+    color: var(--gray-700);
+    background: #fff;
+    position: relative;
+  }
+  .screenshot-upload-area:hover { border-color: var(--blue-accent); background: var(--blue-light); }
+  .screenshot-upload-area input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .screenshot-thumb {
+    position: relative;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+    aspect-ratio: 16/10;
+    background: var(--gray-100);
+  }
+  .screenshot-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .screenshot-thumb-del {
+    position: absolute; top: 3px; right: 3px;
+    width: 18px; height: 18px;
+    background: rgba(220,53,69,0.85);
+    color: #fff;
+    border: none; border-radius: 50%;
+    font-size: 10px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .screenshot-count {
+    font-size: 0.72rem;
+    color: var(--gray-700);
+    margin-top: 6px;
+  }
+
+  /* ── INSTRUCTOR NOTE ── */
+  .instructor-note {
+    background: #fff8e6;
+    border: 1px solid #ffe08a;
+    border-left: 4px solid #f0ad00;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 18px 0;
+    font-size: 0.83rem; line-height: 1.6;
+  }
+  .instructor-note strong { color: #856404; }
+
+  /* ── MODULE REFERENCE ── */
+  .module-ref {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 0.73rem; color: #666;
+    background: var(--gray-100);
+    border-radius: 4px; padding: 2px 7px; margin-bottom: 9px;
+  }
+
+  /* ── FINISH MODAL ── */
+  .finish-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,30,50,0.8);
+    backdrop-filter: blur(6px);
+    z-index: 9999;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .finish-overlay.open { display: flex; }
+  .finish-box {
+    background: #fff; border-radius: 18px;
+    width: 100%; max-width: 520px;
+    padding: 40px 36px;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.93) translateY(12px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .finish-trophy { font-size: 4rem; margin-bottom: 16px; display: block; }
+  .finish-box h2 { font-size: 1.6rem; font-weight: 800; color: var(--blue-dark); margin-bottom: 8px; }
+  .finish-box p  { font-size: 0.9rem; color: var(--gray-700); margin-bottom: 20px; line-height: 1.6; }
+  .finish-time {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: var(--sophos-teal);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 2px;
+    margin: 12px 0;
+  }
+  .finish-rank {
+    background: var(--green-light);
+    border: 1px solid #b8dfc1;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1a6e3c;
+    margin-bottom: 20px;
+  }
+  .finish-close {
+    padding: 11px 28px;
+    background: var(--blue-accent);
+    color: #fff;
+    border: none; border-radius: 8px;
+    font-size: 0.9rem; font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* ── LEADERBOARD ── */
+  .leaderboard-wrap {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .leaderboard-title {
+    background: var(--blue-dark); color: #fff;
+    padding: 12px 16px;
+    font-size: 0.8rem; font-weight: 700;
+    letter-spacing: 0.6px; text-transform: uppercase;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .leaderboard-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 0.83rem;
+  }
+  .leaderboard-row:last-child { border-bottom: none; }
+  .lb-rank {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--gray-100);
+    color: var(--gray-700);
+    font-size: 0.72rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .lb-rank.gold   { background: #ffd700; color: #6b5000; }
+  .lb-rank.silver { background: #c0c0c0; color: #3a3a3a; }
+  .lb-rank.bronze { background: #cd7f32; color: #fff; }
+  .lb-name { flex: 1; font-weight: 600; }
+  .lb-time { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--blue-accent); }
+  .lb-badge {
+    font-size: 0.65rem; font-weight: 700;
+    background: var(--green-light); color: #1a6e3c;
+    padding: 2px 7px; border-radius: 20px;
+  }
+  .lb-empty {
+    padding: 16px;
+    font-size: 0.82rem;
+    color: #999;
+    text-align: center;
+  }
+
+  /* ── FLOATING TIMER ── */
+  .float-timer {
+    position: fixed;
+    bottom: 28px; right: 28px;
+    z-index: 999;
+    background: linear-gradient(135deg, #003057, #0070AD);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 11px 20px;
+    font-size: 1rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 1px;
+    cursor: default;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 4px 20px rgba(0,48,87,0.45);
+  }
+  .float-timer-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #7ef7b0;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.5; transform: scale(0.7); }
+  }
+
+  @media (max-width: 800px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    .timer-bar-inner { flex-direction: column; align-items: flex-start; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN OVERLAY ── -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">🛡️</div>
+    <h2>Laboratorio SCE</h2>
+    <p>Ingresa tu nombre y correo para comenzar el laboratorio. El temporizador iniciará automáticamente al registrarte.</p>
+    <div class="login-field">
+      <label>Nombre completo</label>
+      <input type="text" id="loginName" placeholder="Ej. María García" autocomplete="name">
+    </div>
+    <div class="login-field">
+      <label>Correo electrónico</label>
+      <input type="email" id="loginEmail" placeholder="correo@empresa.com" autocomplete="email">
+    </div>
+    <button class="login-btn" onclick="doLogin()">▶ Iniciar Laboratorio</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-badge-row">
+      <span class="login-badge">📚 4 Fases</span>
+      <span class="login-badge">✅ 14 Tareas</span>
+      <span class="login-badge">🕐 ~6 horas</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── FINISH OVERLAY ── -->
+<div class="finish-overlay" id="finishOverlay">
+  <div class="finish-box">
+    <span class="finish-trophy">🏆</span>
+    <h2>¡Laboratorio Completado!</h2>
+    <p>Has completado todas las tareas del laboratorio Sophos Certified Engineer.</p>
+    <div class="finish-time" id="finishTime">00:00:00</div>
+    <div class="finish-rank" id="finishRank">⏳ Registrando tiempo...</div>
+    <p style="font-size:0.82rem; color:#888; margin-bottom:20px;">Tu tiempo ha sido guardado en el marcador. ¡Buen trabajo!</p>
+    <button class="finish-close" onclick="document.getElementById('finishOverlay').classList.remove('open')">Cerrar</button>
+  </div>
+</div>
+
+<!-- ── HEADER ── -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-logo">🛡️</div>
+    <div class="header-text">
+      <h1>Laboratorio Práctico — Sophos Certified Engineer</h1>
+      <p>Guía integral de actividades para la certificación SCE · Sophos Central</p>
+      <div class="badge-row">
+        <span class="badge">📚 4 Fases</span>
+        <span class="badge">✅ 14 Tareas</span>
+        <span class="badge">🕐 ~6 horas</span>
+        <span class="badge">🔬 Nivel: Técnico</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TIMER BAR ── -->
+  <div class="timer-bar">
+    <div class="timer-bar-inner">
+      <div class="timer-display" id="timerDisplay">00:00:00</div>
+      <div class="timer-label">
+        <strong>⏱ Temporizador del Laboratorio</strong>
+        <span id="timerStatus">Inicia sesión para comenzar</span>
+      </div>
+      <div class="timer-participant" id="timerParticipant" style="display:none">
+        👤 <strong id="participantNameDisplay"></strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-inner">
+      <div class="progress-label">
+        <span>Progreso general del laboratorio</span>
+        <span id="progress-text">0 / 14 tareas completadas</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-title">📋 Fases del Laboratorio</div>
+    <div class="nav-item active" onclick="showPhase(0)" id="nav-0">
+      <div class="nav-icon" style="background:#e8f4fb">⚙️</div>
+      <span>Fase 1: Configuración</span>
+      <div class="nav-check" id="nav-check-0"></div>
+    </div>
+    <div class="nav-item" onclick="showPhase(1)" id="nav-1">
+      <div class="nav-icon" style="background:#e0f8f8">📦</div>
+      <span>Fase 2: Despliegue</span>
+      <div class="nav-check" id="nav-check-1"></div>
+    </div>
+    <div class="nav-item" onclick="showPhase(2)" id="nav-2">
+      <div class="nav-icon" style="background:#f3e8ff">🔐</div>
+      <span>Fase 3: Políticas</span>
+      <div class="nav-check" id="nav-check-2"></div>
+    </div>
+    <div class="nav-item" onclick="showPhase(3)" id="nav-3">
+      <div class="nav-icon" style="background:#d4edda">🔍</div>
+      <span>Fase 4: Verificación</span>
+      <div class="nav-check" id="nav-check-3"></div>
+    </div>
+    <div style="padding:12px 16px; border-top:1px solid var(--gray-100); font-size:0.76rem; color:#888;">
+      💡 <strong>Consejo:</strong> Adjunta capturas de pantalla como evidencia en cada tarea.
+    </div>
+
+    <!-- LEADERBOARD en sidebar -->
+    <div class="leaderboard-wrap" style="border-radius:0; box-shadow:none; margin-bottom:0;">
+      <div class="leaderboard-title">🏆 Marcador — Tiempos</div>
+      <div id="leaderboardList"><div class="lb-empty">Nadie ha terminado aún</div></div>
+    </div>
+  </aside>
+
+  <!-- ── CONTENT ── -->
+  <div class="content">
+
+    <!-- ═══ FASE 1 ═══ -->
+    <div class="phase-panel active" id="phase-0">
+      <div class="phase-header ph-blue">
+        <div class="phase-header-icon">⚙️</div>
+        <h2>Fase 1: Configuración Inicial y Administración</h2>
+        <p>Preparación del entorno de gestión unificado en Sophos Central. Registro, acceso y control de acceso basado en roles.</p>
+        <div class="phase-meta">
+          <span class="phase-meta-item">🕐 ~2 horas</span>
+          <span class="phase-meta-item">📘 Módulo 1 &amp; 5</span>
+          <span class="phase-meta-item">3 Tareas</span>
+        </div>
+      </div>
+
+      <div class="instructor-note">
+        <strong>📌 Nota para el Instructor:</strong> Asegúrese de que cada estudiante tenga acceso a una cuenta de correo válida antes de comenzar. La autenticación MFA es <strong>obligatoria</strong> en Sophos Central — tenga preparadas las instrucciones para Google Authenticator o Microsoft Authenticator.
+      </div>
+
+      <!-- T1 -->
+      <div class="task-card" id="task-0-0">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#0070AD">1</div>
+          <div class="task-title">Registro y Acceso a Sophos Central</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 1 — Introducción a Sophos Central</div>
+          <p class="task-desc">Crear una cuenta de prueba en Sophos Central y configurar el acceso seguro con autenticación multifactor. Este es el punto de partida de toda la gestión unificada.</p>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div>Abrir el navegador y navegar a <a href="https://www.sophos.com/en-us/products/sophos-central/free-trial?utm_source=google&utm_medium=cpc&utm_campaign=mg-2025-latam-all-demg-gog-gen-convr-mdr-mdr-pmax-mdr&utm_term=&utm_content=na&cmp=7014w000001slpPAAQ&gad_source=1&gad_campaignid=23174669692&gbraid=0AAAAA901Nzm_XqKQh7i_J4p5jXBTKlHbK&gclid=CjwKCAjw-J3OBhBuEiwAwqZ_h9ZMhBt3766h3vpgqqYRFS7UDq-lNSn2eyoIYMbkz7DI7RGbCJqUtBoCnkQQAvD_BwE" target="_blank">Sophos Central — Free Trial</a> → Hacer clic en <strong>"Start Free Trial"</strong>.</div></li>
+            <li class="step-item"><div class="step-num">2</div><div>Completar el formulario de registro con correo corporativo o de prueba. Verificar el correo de confirmación y activar la cuenta.</div></li>
+            <li class="step-item"><div class="step-num">3</div><div>Configurar <strong>MFA obligatorio</strong> usando una app autenticadora (Google/Microsoft Authenticator). Escanear el código QR y guardar los códigos de recuperación en un lugar seguro.</div></li>
+            <li class="step-item"><div class="step-num">4</div><div>Acceder a <a href="https://central.sophos.com" target="_blank">central.sophos.com</a> con el Sophos ID creado y completar el proceso de MFA.</div></li>
+          </ol>
+          <div class="callout callout-info">
+            <span class="callout-icon">ℹ️</span>
+            <div>Sophos Central es una consola <strong>unificada basada en la nube</strong> — todas las funciones de protección se gestionan desde aquí, reduciendo complejidad operacional. El Sophos ID es tu identidad única para todos los productos Sophos.</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Cuenta creada y activada por correo</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">MFA configurado correctamente</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Acceso exitoso a central.sophos.com</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-0-0')">
+              <input type="file" id="ss-0-0" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-0-0', 'cnt-0-0')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-0-0"></div>
+            <div class="screenshot-count" id="cnt-0-0"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(0,0)">✓ Marcar como completada</button>
+        </div>
+      </div>
+
+      <!-- T2 -->
+      <div class="task-card" id="task-0-1">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#0070AD">2</div>
+          <div class="task-title">Gestión Manual de Usuarios y Grupos</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 1 — Administración</div>
+          <p class="task-desc">Practicar la creación y organización manual de usuarios y grupos dentro de la consola. Este conocimiento es la base antes de automatizar con sincronización de directorio.</p>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div>En Sophos Central, navegar a <code>Personas → Usuarios</code> → <strong>"Agregar Usuario"</strong>.</div></li>
+            <li class="step-item"><div class="step-num">2</div><div>Crear al menos <strong>3 usuarios de prueba</strong> con diferentes roles (ej. <em>IT Admin, HR, Finance</em>) — usar correos ficticios del dominio de tu tenant de prueba.</div></li>
+            <li class="step-item"><div class="step-num">3</div><div>Navegar a <code>Personas → Grupos</code> → crear grupos por departamento (ej. <em>Grupo-IT, Grupo-RRHH</em>).</div></li>
+            <li class="step-item"><div class="step-num">4</div><div>Asignar cada usuario al grupo correspondiente usando la edición del usuario o la gestión del grupo.</div></li>
+            <li class="step-item"><div class="step-num">5</div><div>Verificar que la estructura de usuarios y grupos aparece correctamente en el panel.</div></li>
+          </ol>
+          <div class="callout callout-warning">
+            <span class="callout-icon">⚠️</span>
+            <div>En entornos de producción, la gestión manual solo es práctica para organizaciones pequeñas. Para empresas medianas o grandes, utilizar la <strong>sincronización de directorio</strong> (Azure AD / Entra ID) desde los ajustes globales.</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">3+ usuarios creados manualmente</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Grupos por departamento creados</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Usuarios asignados a grupos correspondientes</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-0-1')">
+              <input type="file" id="ss-0-1" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-0-1', 'cnt-0-1')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-0-1"></div>
+            <div class="screenshot-count" id="cnt-0-1"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(0,1)">✓ Marcar como completada</button>
+        </div>
+      </div>
+
+      <!-- T3 -->
+      <div class="task-card" id="task-0-2">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#0070AD">3</div>
+          <div class="task-title">Configuración de Roles de Administrador</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 1 — Control de Acceso Basado en Roles</div>
+          <p class="task-desc">Definir qué puede hacer cada administrador dentro de la consola usando RBAC (Role-Based Access Control). Asegurar el principio de mínimo privilegio.</p>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div>En Sophos Central → <code>Ajustes Globales → Roles de Administrador</code> → Explorar los roles predeterminados disponibles.</div></li>
+            <li class="step-item"><div class="step-num">2</div><div>Crear un <strong>rol personalizado</strong> para "Analista de Seguridad" con permisos de lectura en alertas e informes, pero sin permisos de modificación de políticas.</div></li>
+            <li class="step-item"><div class="step-num">3</div><div>Crear un rol para "Administrador de Endpoint" con permisos para gestionar dispositivos y políticas de endpoint únicamente.</div></li>
+            <li class="step-item"><div class="step-num">4</div><div>Asignar los roles a los usuarios de prueba creados en la Tarea 2.</div></li>
+            <li class="step-item"><div class="step-num">5</div><div>Verificar que un usuario con rol restringido no puede acceder a funciones fuera de su ámbito.</div></li>
+          </ol>
+          <div class="callout callout-info">
+            <span class="callout-icon">ℹ️</span>
+            <div>El RBAC es fundamental en organizaciones con múltiples equipos. Un analista de SOC necesita visibilidad pero no debería poder modificar políticas críticas. El principio de <strong>mínimo privilegio</strong> reduce el riesgo operacional.</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Roles predeterminados revisados</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Rol "Analista de Seguridad" creado</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Roles asignados a usuarios de prueba</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-0-2')">
+              <input type="file" id="ss-0-2" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-0-2', 'cnt-0-2')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-0-2"></div>
+            <div class="screenshot-count" id="cnt-0-2"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(0,2)">✓ Marcar como completada</button>
+        </div>
+      </div>
+    </div><!-- /phase-0 -->
+
+    <!-- ═══ FASE 2 ═══ -->
+    <div class="phase-panel" id="phase-1">
+      <div class="phase-header ph-teal">
+        <div class="phase-header-icon">📦</div>
+        <h2>Fase 2: Despliegue de Agentes</h2>
+        <p>Instalación del agente Sophos en endpoints Windows y macOS. Exploración de métodos de despliegue y configuración de Tamper Protection.</p>
+        <div class="phase-meta">
+          <span class="phase-meta-item">🕐 ~1 hora</span>
+          <span class="phase-meta-item">📘 Módulo 2 &amp; 4</span>
+          <span class="phase-meta-item">2 Tareas</span>
+        </div>
+      </div>
+
+      <!-- T4 -->
+      <div class="task-card" id="task-1-0">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#007A7C">4</div>
+          <div class="task-title">Instalación Manual del Agente (Windows/macOS)</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 4 — Métodos de Instalación</div>
+          <p class="task-desc">Desplegar el agente Sophos Endpoint manualmente en una VM de prueba. Esta es la forma más directa y esencial de comprender el proceso de instalación.</p>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div>En Sophos Central → <code>Endpoint Protection → Instaladores</code>. Seleccionar el instalador para <strong>Windows</strong> (o macOS según la VM disponible).</div></li>
+            <li class="step-item"><div class="step-num">2</div><div>Descargar el instalador <code>SophosInstall.exe</code> (Windows) o <code>SophosInstall.pkg</code> (macOS).</div></li>
+            <li class="step-item"><div class="step-num">3</div><div>En la VM de prueba, ejecutar el instalador <strong>como administrador</strong>. El instalador se conectará automáticamente a Sophos Central para registrar el dispositivo.</div></li>
+            <li class="step-item"><div class="step-num">4</div><div>Esperar a que complete la instalación (~5-10 min). El agente descargará las definiciones de seguridad más recientes.</div></li>
+            <li class="step-item"><div class="step-num">5</div><div>Verificar en Sophos Central → <code>Dispositivos</code> que el nuevo endpoint aparece con <strong>estado verde</strong> y nombre de dispositivo correcto.</div></li>
+          </ol>
+          <div class="callout callout-info">
+            <span class="callout-icon">💡</span>
+            <div>Las actualizaciones del agente usan el puerto <strong>TCP 443 (HTTPS)</strong> y emplean <em>deltas dinámicos</em> — solo se descargan los cambios entre versiones, minimizando el consumo de ancho de banda en la red corporativa.</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Instalador descargado desde Sophos Central</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Agente instalado exitosamente en VM</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Endpoint visible en Sophos Central con estado verde</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-1-0')">
+              <input type="file" id="ss-1-0" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-1-0', 'cnt-1-0')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-1-0"></div>
+            <div class="screenshot-count" id="cnt-1-0"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(1,0)">✓ Marcar como completada</button>
+        </div>
+      </div>
+
+      <!-- T5 -->
+      <div class="task-card" id="task-1-1">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#007A7C">5</div>
+          <div class="task-title">Tamper Protection — Contraseñas Únicas por Dispositivo</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 5 — Tamper Protection</div>
+          <p class="task-desc">Verificar y gestionar la protección contra manipulaciones del agente. Cada dispositivo tiene una contraseña única — este mecanismo impide la desinstalación no autorizada.</p>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div>En Sophos Central → <code>Endpoint Protection → Dispositivos</code> → Seleccionar un dispositivo registrado.</div></li>
+            <li class="step-item"><div class="step-num">2</div><div>En la sección de <strong>Tamper Protection</strong>, localizar la contraseña única del dispositivo. Observar que es diferente para cada máquina.</div></li>
+            <li class="step-item"><div class="step-num">3</div><div>Practicar la desactivación temporal de Tamper Protection (necesario para desinstalación autorizada o actualizaciones específicas). Documentar el proceso.</div></li>
+            <li class="step-item"><div class="step-num">4</div><div>Intentar desinstalar el agente <strong>sin</strong> desactivar Tamper Protection → Verificar que el proceso es bloqueado.</div></li>
+            <li class="step-item"><div class="step-num">5</div><div>Reactivar Tamper Protection tras la prueba. Verificar que el dispositivo regresa a estado protegido.</div></li>
+          </ol>
+          <div class="callout callout-danger">
+            <span class="callout-icon">🔴</span>
+            <div><strong>Seguridad importante:</strong> Las contraseñas de Tamper Protection son <strong>únicas por dispositivo</strong> — nunca son iguales. Esto previene que un atacante que obtenga una contraseña pueda desproteger múltiples máquinas simultáneamente.</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Contraseña de Tamper Protection localizada</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Unicidad de contraseñas verificada en múltiples dispositivos</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Proceso de desactivación/reactivación practicado</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Bloqueo de desinstalación sin contraseña verificado</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-1-1')">
+              <input type="file" id="ss-1-1" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-1-1', 'cnt-1-1')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-1-1"></div>
+            <div class="screenshot-count" id="cnt-1-1"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(1,1)">✓ Marcar como completada</button>
+        </div>
+      </div>
+    </div><!-- /phase-1 -->
+
+    <!-- ═══ FASE 3 ═══ -->
+    <div class="phase-panel" id="phase-2">
+      <div class="phase-header ph-purple">
+        <div class="phase-header-icon">🔐</div>
+        <h2>Fase 3: Configuración de Políticas de Protección</h2>
+        <p>Aplicación de las configuraciones de seguridad centrales. Threat Protection, Control de Aplicaciones, Periféricos, Web Control, Heartbeat y DLP.</p>
+        <div class="phase-meta">
+          <span class="phase-meta-item">🕐 ~3 horas</span>
+          <span class="phase-meta-item">📘 Módulos 2, 3 &amp; 5</span>
+          <span class="phase-meta-item">7 Tareas</span>
+        </div>
+      </div>
+
+      <div class="instructor-note">
+        <strong>📌 Nota para el Instructor:</strong> Recordar el principio de <strong>"primera coincidencia"</strong> de Sophos: la política que esté más arriba en la lista y coincida con el usuario o dispositivo será la que se aplique. Enfatizar este comportamiento en cada ejercicio de creación de políticas.
+      </div>
+
+      <!-- T6 -->
+      <div class="task-card" id="task-2-0">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#6c3483">6</div>
+          <div class="task-title">Política de Threat Protection — Deep Learning y CryptoGuard</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 2 — Capas de Protección</div>
+          <p class="task-desc">Configurar la política de protección contra amenazas con las tecnologías avanzadas de detección. Comprender cada capa de protección y cómo interactúan.</p>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div>En Sophos Central → <code>Endpoint Protection → Políticas → Protección contra Amenazas</code> → Revisar la política base predeterminada de Sophos.</div></li>
+            <li class="step-item"><div class="step-num">2</div><div>Crear una <strong>nueva política</strong> de dispositivo (nombre: <em>Lab-ThreatPolicy-Advanced</em>). Asignarla al grupo de VM de prueba.</div></li>
+            <li class="step-item"><div class="step-num">3</div><div>Habilitar y revisar cada tecnología:<br>• <strong>Deep Learning</strong>: Modelo de ML entrenado por SophosLabs. Detecta malware desconocido <em>antes de su ejecución</em>.<br>• <strong>Live Protection</strong>: Consultas en tiempo real a SophosLabs. Requiere conectividad.<br>• <strong>CryptoGuard</strong>: Anti-ransomware. Detecta cifrado malicioso y <em>revierte automáticamente</em> los cambios.<br>• <strong>WipeGuard</strong>: Protege el MBR contra manipulaciones.<br>• <strong>AMSI</strong>: Escanea scripts PowerShell en memoria antes de ejecución.</div></li>
+            <li class="step-item"><div class="step-num">4</div><div>Configurar el escaneo de descargas en curso y verificar la opción de escaneo en acceso.</div></li>
+            <li class="step-item"><div class="step-num">5</div><div>Guardar y aplicar la política. Verificar que el dispositivo de prueba ha recibido la nueva política.</div></li>
+          </ol>
+          <div class="callout callout-success">
+            <span class="callout-icon">🛡️</span>
+            <div>La combinación de <strong>Deep Learning + CryptoGuard + Live Protection</strong> representa la defensa en profundidad de Sophos. Cada capa cubre diferentes vectores de ataque: pre-ejecución, comportamental y en tiempo real.</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Política base predeterminada revisada</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Nueva política avanzada creada y asignada</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Deep Learning, CryptoGuard y AMSI habilitados</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Política aplicada al dispositivo de prueba</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-2-0')">
+              <input type="file" id="ss-2-0" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-2-0', 'cnt-2-0')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-2-0"></div>
+            <div class="screenshot-count" id="cnt-2-0"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(2,0)">✓ Marcar como completada</button>
+        </div>
+      </div>
+
+      <!-- T7 -->
+      <div class="task-card" id="task-2-1">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#6c3483">7</div>
+          <div class="task-title">Aislamiento Automático y Seguridad Sincronizada (Heartbeat)</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 3 — Seguridad Sincronizada</div>
+          <p class="task-desc">Comprender y configurar el mecanismo de Heartbeat y el aislamiento automático de dispositivos comprometidos. Esta es la función de "Seguridad Sincronizada" que diferencia a Sophos.</p>
+          <div class="health-grid">
+            <div class="health-card health-green">
+              <div class="health-dot dot-green"></div>
+              <div class="health-title">🟢 Verde</div>
+              <div>Agente funcional y protegido. Sin amenazas detectadas.</div>
+            </div>
+            <div class="health-card health-yellow">
+              <div class="health-dot dot-yellow"></div>
+              <div class="health-title">🟡 Amarillo</div>
+              <div>Riesgo detectado. PUA o malware inactivo presente.</div>
+            </div>
+            <div class="health-card health-red">
+              <div class="health-dot dot-red"></div>
+              <div class="health-title">🔴 Rojo</div>
+              <div>Amenaza activa o agente no funcional. Aislamiento recomendado.</div>
+            </div>
+          </div>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div>En Sophos Central → <code>Políticas de Protección contra Amenazas</code> → Sección <strong>"Aislamiento"</strong>. Activar la opción de aislamiento automático.</div></li>
+            <li class="step-item"><div class="step-num">2</div><div>Configurar para que un dispositivo con <strong>estado de salud rojo</strong> se desconecte automáticamente de la red.</div></li>
+            <li class="step-item"><div class="step-num">3</div><div>Verificar que el aislamiento <strong>mantiene comunicación con Sophos Central</strong> — el administrador puede seguir gestionando el dispositivo incluso aislado.</div></li>
+            <li class="step-item"><div class="step-num">4</div><div>Si hay Sophos Firewall en el entorno: configurar la regla de aislamiento automático cuando el Heartbeat del endpoint sea rojo (previene movimiento lateral).</div></li>
+          </ol>
+          <div class="callout callout-info">
+            <span class="callout-icon">💡</span>
+            <div>El Heartbeat funciona mediante un <strong>túnel bidireccional seguro</strong>. Cuando el firewall detecta que un endpoint tiene estado rojo, puede aislarlo automáticamente — sin intervención manual del administrador.</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Estados de salud del Heartbeat comprendidos</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Aislamiento automático configurado</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Comunicación con Central durante aislamiento verificada</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-2-1')">
+              <input type="file" id="ss-2-1" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-2-1', 'cnt-2-1')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-2-1"></div>
+            <div class="screenshot-count" id="cnt-2-1"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(2,1)">✓ Marcar como completada</button>
+        </div>
+      </div>
+
+      <!-- T8 -->
+      <div class="task-card" id="task-2-2">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#6c3483">8</div>
+          <div class="task-title">Control de Aplicaciones — Inventario y Bloqueo de AnyDesk</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 2 — Control de Aplicaciones</div>
+          <p class="task-desc">Crear una política de control de aplicaciones para registrar <strong>todas las aplicaciones instaladas en la VM</strong>, identificar aplicaciones de acceso remoto no autorizadas como AnyDesk, y proceder a su bloqueo efectivo.</p>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div><strong>Generar inventario de aplicaciones:</strong> En Sophos Central → <code>Endpoint Protection → Dispositivos</code> → Seleccionar la VM → Pestaña <strong>"Software"</strong>. Revisar el listado completo de aplicaciones detectadas en la máquina.</div></li>
+            <li class="step-item"><div class="step-num">2</div><div>Exportar o anotar las aplicaciones de acceso remoto detectadas (AnyDesk, TeamViewer, UltraVNC, etc.). Estas aplicaciones pueden ser un vector de acceso no autorizado si no están gestionadas corporativamente.</div></li>
+            <li class="step-item"><div class="step-num">3</div><div><strong>Crear política de detección previa:</strong> En Sophos Central → <code>Políticas → Control de Aplicaciones</code> → <strong>"Agregar Política"</strong> → Nombre: <em>Lab-AppControl-Detección</em>. Modo inicial: <strong>"Detectar únicamente"</strong> (sin bloqueo).</div></li>
+            <li class="step-item"><div class="step-num">4</div><div>En el buscador de aplicaciones de la política, buscar <strong>"AnyDesk"</strong> y añadirla. Buscar también la categoría <em>"Herramientas de Escritorio Remoto"</em> para cubrir otras variantes similares. Guardar y asignar la política a la VM de prueba.</div></li>
+            <li class="step-item"><div class="step-num">5</div><div><strong>Verificar detección:</strong> Si AnyDesk está instalado en la VM, ejecutarlo. En Sophos Central → <code>Eventos</code> debería aparecer un evento de <em>"Aplicación detectada"</em> con nombre del proceso, ruta y usuario.</div></li>
+            <li class="step-item"><div class="step-num">6</div><div><strong>Activar bloqueo:</strong> Editar la política → Cambiar el modo de AnyDesk de <em>"Detectar"</em> a <strong>"Bloquear"</strong>. Guardar y esperar ~1 minuto a que el agente reciba la actualización de política.</div></li>
+            <li class="step-item"><div class="step-num">7</div><div><strong>Verificar bloqueo en la VM:</strong> Intentar abrir AnyDesk en la máquina virtual. El agente de Sophos debe mostrar una notificación de bloqueo y la aplicación <strong>no debe ejecutarse</strong>. Verificar el evento de bloqueo en Sophos Central.</div></li>
+          </ol>
+          <div class="callout callout-danger">
+            <span class="callout-icon">🔴</span>
+            <div><strong>¿Por qué bloquear AnyDesk?</strong> Las herramientas de acceso remoto son frecuentemente usadas por atacantes en fases post-explotación para mantener <em>persistencia</em> y <em>acceso remoto encubierto</em>. No instalarlas no es suficiente — hay que detectar si ya existen y bloquear su ejecución.</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Inventario de aplicaciones de la VM revisado</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Política Lab-AppControl creada en modo "Detectar"</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">AnyDesk y herramientas remotas añadidas a la política</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Evento de detección visible en Sophos Central</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Modo cambiado a "Bloquear" y verificado en VM</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-2-2')">
+              <input type="file" id="ss-2-2" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-2-2', 'cnt-2-2')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-2-2"></div>
+            <div class="screenshot-count" id="cnt-2-2"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(2,2)">✓ Marcar como completada</button>
+        </div>
+      </div>
+
+      <!-- T9 -->
+      <div class="task-card" id="task-2-3">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#6c3483">9</div>
+          <div class="task-title">Control de Periféricos (USB y Bluetooth)</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 2 — Control Periférico</div>
+          <p class="task-desc">Configurar el control de dispositivos externos para prevenir exfiltración de datos o infección por dispositivos USB maliciosos.</p>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div>En Sophos Central → <code>Políticas → Control Periférico</code> → Crear política <em>Lab-PeripheralControl</em>.</div></li>
+            <li class="step-item"><div class="step-num">2</div><div>Iniciar con la opción <strong>"Monitorizar pero no bloquear"</strong> para USB y Bluetooth. Esto permite ver qué dispositivos están siendo usados actualmente.</div></li>
+            <li class="step-item"><div class="step-num">3</div><div>Revisar los eventos generados tras 5-10 minutos de monitoreo. Identificar qué dispositivos USB y Bluetooth están conectados en el entorno.</div></li>
+            <li class="step-item"><div class="step-num">4</div><div>Crear excepciones para dispositivos aprobados (ej. teclado corporativo, mouse). Usar el ID de dispositivo o el nombre del fabricante.</div></li>
+            <li class="step-item"><div class="step-num">5</div><div>Cambiar la política a <strong>"Bloquear"</strong> para dispositivos de almacenamiento USB no autorizados. Conectar un USB de prueba y verificar el bloqueo.</div></li>
+          </ol>
+          <div class="callout callout-success">
+            <span class="callout-icon">✅</span>
+            <div><strong>Flujo recomendado:</strong> Monitorear → Identificar dispositivos legítimos → Crear excepciones → Activar bloqueo. Este enfoque gradual evita interrumpir operaciones legítimas del negocio.</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Política iniciada en modo "Monitorizar"</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Dispositivos en uso identificados</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Excepciones para dispositivos aprobados creadas</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Bloqueo de USB no autorizado verificado</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-2-3')">
+              <input type="file" id="ss-2-3" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-2-3', 'cnt-2-3')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-2-3"></div>
+            <div class="screenshot-count" id="cnt-2-3"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(2,3)">✓ Marcar como completada</button>
+        </div>
+      </div>
+
+      <!-- T10 -->
+      <div class="task-card" id="task-2-4">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#6c3483">10</div>
+          <div class="task-title">Web Control Práctico — Bloqueo por Categorías y Excepciones</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 2 — Web Control</div>
+          <p class="task-desc">Implementar filtrado web real en la VM de prueba: bloquear categorías completas, verificar el bloqueo en el navegador y configurar una <strong>excepción para un sitio específico</strong> dentro de una categoría bloqueada.</p>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div><strong>Crear la política:</strong> Sophos Central → <code>Endpoint Protection → Políticas → Web Control</code> → <strong>"Agregar Política"</strong> → Nombre: <em>Lab-WebControl-Practico</em>. Asignarla al grupo de la VM de prueba.</div></li>
+            <li class="step-item"><div class="step-num">2</div><div><strong>Bloquear categorías:</strong> Configurar como <strong>Bloqueado</strong>: 🚫 <em>Juegos de Azar</em> · 🚫 <em>Redes Sociales</em> · 🚫 <em>Streaming / Entretenimiento</em> · 🚫 <em>Descarga de Archivos / P2P</em></div></li>
+            <li class="step-item"><div class="step-num">3</div><div><strong>Configurar modo "Advertencia"</strong> para categorías donde el usuario puede necesitar acceso ocasional: ⚠️ <em>Noticias y Medios</em> · ⚠️ <em>Foros y Grupos de Discusión</em></div></li>
+            <li class="step-item"><div class="step-num">4</div><div><strong>Prueba de bloqueo en la VM:</strong> Intentar acceder a <code>www.facebook.com</code>. Debe aparecer la página de bloqueo de Sophos indicando la categoría bloqueada.</div></li>
+            <li class="step-item"><div class="step-num">5</div><div><strong>Crear excepción para linkedin.com:</strong> En la política → <em>"Excepciones de sitios web"</em> → <strong>"Agregar sitio web"</strong>: <code>www.linkedin.com</code> → Acción: <strong>Permitir</strong>.</div></li>
+            <li class="step-item"><div class="step-num">6</div><div><strong>Verificar la excepción:</strong> <code>linkedin.com</code> debe cargarse correctamente pese al bloqueo de "Redes Sociales". <code>facebook.com</code> debe seguir bloqueado.</div></li>
+            <li class="step-item"><div class="step-num">7</div><div>En Sophos Central → <code>Eventos → Web Control</code> → Revisar el log de accesos con usuario, dispositivo y URL.</div></li>
+          </ol>
+          <div class="callout callout-success">
+            <span class="callout-icon">🎯</span>
+            <div><strong>Resultado esperado:</strong><br>✓ <code>facebook.com</code> → <strong>Bloqueado</strong> · ✓ <code>elpais.com</code> → <strong>Advertencia</strong> · ✓ <code>linkedin.com</code> → <strong>Permitido</strong> (excepción)</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Política Lab-WebControl creada y asignada a la VM</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Bloqueo de facebook.com verificado en la VM</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Excepción para linkedin.com creada y verificada</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Log de eventos Web Control revisado en Central</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-2-4')">
+              <input type="file" id="ss-2-4" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-2-4', 'cnt-2-4')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-2-4"></div>
+            <div class="screenshot-count" id="cnt-2-4"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(2,4)">✓ Marcar como completada</button>
+        </div>
+      </div>
+
+      <!-- T11 -->
+      <div class="task-card" id="task-2-5">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#6c3483">11</div>
+          <div class="task-title">Detección de Malware con Archivo EICAR en la VM</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 2 &amp; 5 — Detección</div>
+          <p class="task-desc">Generar una detección real y controlada en la VM usando el <strong>archivo de prueba estándar EICAR</strong>. Este archivo es reconocido globalmente como "malware de prueba" — no contiene código dañino pero activa todos los motores de detección antivirus.</p>
+          <div class="callout callout-success">
+            <span class="callout-icon">🧪</span>
+            <div><strong>¿Qué es EICAR?</strong> Es una cadena de texto de 68 bytes que todos los antivirus reconocen como amenaza de prueba. Es el método estándar internacional para verificar que la protección AV está funcionando correctamente, sin riesgo real.</div>
+          </div>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div><strong>Descarga directa:</strong> Desde la VM, navegar a <a href="https://www.eicar.org/download-anti-malware-testfile/" target="_blank">eicar.org/download-anti-malware-testfile/</a>. Intentar descargar el archivo <code>eicar.com</code> (sin comprimir).</div></li>
+            <li class="step-item"><div class="step-num">2</div><div><strong>Resultado esperado — Bloqueo en descarga:</strong> El agente de Sophos debe interceptar el archivo <em>antes de que se guarde en el disco</em>. El navegador mostrará que la descarga fue bloqueada.</div></li>
+            <li class="step-item"><div class="step-num">3</div><div><strong>Creación manual:</strong> Abrir el Bloc de Notas en la VM → Pegar el texto EICAR:<br><code>X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*</code><br>Guardar como <code>eicar_test.com</code> en el Escritorio. El agente debe detectarlo <strong>al momento de guardar</strong>.</div></li>
+            <li class="step-item"><div class="step-num">4</div><div><strong>Observar la reacción del agente:</strong> Notificación emergente en la VM: <em>"Amenaza detectada"</em>. El archivo es eliminado o puesto en cuarentena. Sophos lo identifica como <strong>"EICAR-AV-Test"</strong>.</div></li>
+            <li class="step-item"><div class="step-num">5</div><div><strong>Verificar en Sophos Central:</strong> Ir a <code>Alertas</code> y <code>Endpoint Protection → Eventos</code>. Localizar el evento de detección con nombre del dispositivo, usuario, hash SHA-256, ruta y acción tomada.</div></li>
+          </ol>
+          <div class="callout callout-warning">
+            <span class="callout-icon">⚠️</span>
+            <div><strong>Importante:</strong> Si tienes activado <strong>Tamper Protection</strong>, verifica que <em>On-Access Scanning</em> esté habilitado en la política de Threat Protection de la VM para que la detección funcione al crear el archivo manualmente.</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Descarga de eicar.com bloqueada desde el navegador</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Notificación del agente visible en la VM</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Archivo eliminado o en cuarentena (no existe en disco)</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Evento de detección EICAR visible en Sophos Central</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-2-5')">
+              <input type="file" id="ss-2-5" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-2-5', 'cnt-2-5')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-2-5"></div>
+            <div class="screenshot-count" id="cnt-2-5"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(2,5)">✓ Marcar como completada</button>
+        </div>
+      </div>
+
+      <!-- T12 -->
+      <div class="task-card" id="task-2-6">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#6c3483">12</div>
+          <div class="task-title">Prevención de Pérdida de Datos (DLP) y Exclusiones</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 2 — Data Loss Prevention</div>
+          <p class="task-desc">Configurar reglas DLP para detectar y controlar la transferencia de datos sensibles fuera del endpoint. Aprender a gestionar exclusiones para evitar falsos positivos en procesos legítimos del negocio.</p>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div>En Sophos Central → <code>Políticas → Data Loss Prevention</code> → <strong>"Agregar Política"</strong> → Nombre: <em>Lab-DLP-Datos-Sensibles</em>.</div></li>
+            <li class="step-item"><div class="step-num">2</div><div>Crear una <strong>regla para números de tarjeta de crédito</strong>: buscar el tipo de dato <em>"Credit Card Numbers"</em> en los tipos predefinidos. Configurar la acción como <strong>"Registrar"</strong> (log) inicialmente.</div></li>
+            <li class="step-item"><div class="step-num">3</div><div>Crear una <strong>regla para datos de identidad</strong>: buscar <em>"National ID"</em> o equivalente. Configurar la acción como <strong>"Bloquear y Registrar"</strong>.</div></li>
+            <li class="step-item"><div class="step-num">4</div><div><strong>Prueba en la VM:</strong> Crear un archivo de texto con números de tarjeta de prueba (ej. <code>4111 1111 1111 1111</code>) e intentar copiarlo a un USB. Verificar el evento en Sophos Central.</div></li>
+          </ol>
+          <div class="callout callout-info">
+            <span class="callout-icon">🔒</span>
+            <div>DLP es especialmente relevante para cumplimiento normativo (GDPR, PCI-DSS). Sophos detecta datos sensibles basándose en <strong>patrones y expresiones regulares</strong>, no solo en nombres de archivo.</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Política DLP creada con regla de tarjetas de crédito</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Regla de datos de identidad configurada</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Prueba de detección realizada en la VM</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-2-6')">
+              <input type="file" id="ss-2-6" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-2-6', 'cnt-2-6')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-2-6"></div>
+            <div class="screenshot-count" id="cnt-2-6"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(2,6)">✓ Marcar como completada</button>
+        </div>
+      </div>
+    </div><!-- /phase-2 -->
+
+    <!-- ═══ FASE 4 ═══ -->
+    <div class="phase-panel" id="phase-3">
+      <div class="phase-header ph-green">
+        <div class="phase-header-icon">🔍</div>
+        <h2>Fase 4: Verificación, Remediación e Informes</h2>
+        <p>Validar que la protección funciona correctamente. Pruebas de reputación, análisis de amenazas con EDR/XDR, y generación de informes.</p>
+        <div class="phase-meta">
+          <span class="phase-meta-item">🕐 ~1 hora</span>
+          <span class="phase-meta-item">📘 Módulos 5 &amp; 6</span>
+          <span class="phase-meta-item">2 Tareas</span>
+        </div>
+      </div>
+
+      <!-- T13 -->
+      <div class="task-card" id="task-3-0">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#1a6e3c">13</div>
+          <div class="task-title">Pruebas de Detección con sophostest.com</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 5 — Alertas y Verificación</div>
+          <p class="task-desc">Usar el sitio oficial de pruebas de Sophos para generar detecciones controladas y verificar que el agente responde correctamente a amenazas.</p>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div>Desde el endpoint con el agente instalado, abrir el navegador y acceder a <a href="http://sophostest.com" target="_blank">http://sophostest.com</a>.</div></li>
+            <li class="step-item"><div class="step-num">2</div><div>Seleccionar la prueba de <strong>"Download Reputation Alert"</strong> — intentar descargar el archivo de prueba y observar la reacción del agente.</div></li>
+            <li class="step-item"><div class="step-num">3</div><div>Verificar que el agente muestra una <strong>notificación de bloqueo</strong> en el endpoint y que el archivo NO se descarga.</div></li>
+            <li class="step-item"><div class="step-num">4</div><div>En Sophos Central → <code>Alertas</code> → Verificar que aparece la alerta generada con detalles del dispositivo, usuario y tipo de amenaza.</div></li>
+            <li class="step-item"><div class="step-num">5</div><div>Explorar el evento en detalle: revisar el <strong>hash del archivo</strong>, la clasificación de SophosLabs y las acciones tomadas por el agente.</div></li>
+          </ol>
+          <div class="callout callout-success">
+            <span class="callout-icon">✅</span>
+            <div>Este sitio es seguro para pruebas — los archivos no contienen malware real pero activan las detecciones del agente. Es la forma oficial de Sophos para verificar que la protección está funcionando correctamente en producción.</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Prueba de descarga ejecutada desde sophostest.com</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Notificación de bloqueo visible en endpoint</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Alerta generada y visible en Sophos Central</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-3-0')">
+              <input type="file" id="ss-3-0" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-3-0', 'cnt-3-0')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-3-0"></div>
+            <div class="screenshot-count" id="cnt-3-0"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(3,0)">✓ Marcar como completada</button>
+        </div>
+      </div>
+
+      <!-- T14 -->
+      <div class="task-card" id="task-3-1">
+        <div class="task-header" onclick="toggleTask(this)">
+          <div class="task-num" style="background:#1a6e3c">14</div>
+          <div class="task-title">Auditoría Completa del Entorno y Validación de Políticas</div>
+          <div class="task-badges"><span class="tag tag-required">Obligatorio</span></div>
+          <span class="task-chevron">▶</span>
+        </div>
+        <div class="task-body">
+          <div class="module-ref">📚 Módulo 1, 5 &amp; 6 — Administración y Verificación Final</div>
+          <p class="task-desc">Ejercicio de cierre del laboratorio: verificar que todas las políticas configuradas durante las 4 fases están correctamente aplicadas y producir un resumen ejecutivo de los hallazgos.</p>
+          <ol class="steps">
+            <li class="step-item"><div class="step-num">1</div><div><strong>Revisión de estado de dispositivos:</strong> En Sophos Central → <code>Dashboard principal</code>. Verificar que todos los endpoints muestran <strong>estado verde</strong>.</div></li>
+            <li class="step-item"><div class="step-num">2</div><div><strong>Validación de políticas aplicadas:</strong> Para cada dispositivo de prueba, ir a <code>Dispositivos → [VM] → Políticas</code>. Verificar que recibió correctamente todas las políticas configuradas en las fases anteriores.</div></li>
+            <li class="step-item"><div class="step-num">3</div><div><strong>Revisión consolidada de eventos:</strong> En <code>Eventos</code> → Filtrar por las últimas 24h. Revisar la distribución de eventos por tipo: detecciones de malware, bloqueos de aplicaciones, bloqueos web e intentos de uso de USB.</div></li>
+            <li class="step-item"><div class="step-num">4</div><div><strong>Generar informe ejecutivo:</strong> En <code>Informes → Resumen Ejecutivo</code>. Seleccionar el período del laboratorio y generar un PDF con: cantidad de amenazas detectadas, dispositivos protegidos vs. sin proteger, top aplicaciones bloqueadas y actividad de usuarios.</div></li>
+            <li class="step-item"><div class="step-num">5</div><div><strong>EDR — Análisis de Amenazas:</strong> En <code>Análisis de Amenazas</code> → Revisar los incidentes listados. Abrir uno y explorar el <strong>Gráfico de Amenazas (RCA)</strong> — visualiza el árbol de procesos del ataque.</div></li>
+          </ol>
+          <div class="callout callout-success">
+            <span class="callout-icon">🏁</span>
+            <div><strong>Criterio de aprobación del laboratorio:</strong><br>
+            ✓ Sophos Central gestiona de forma centralizada todas las capas de protección<br>
+            ✓ Las políticas se aplican correctamente con el principio de primera coincidencia<br>
+            ✓ La detección de amenazas genera alertas accionables e investigables<br>
+            ✓ Los informes permiten demostrar el valor de la plataforma a la dirección</div>
+          </div>
+          <ul class="checklist">
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Todos los endpoints con estado verde</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Políticas verificadas en el dispositivo de prueba</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Eventos consolidados de las 4 fases revisados</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Informe ejecutivo generado</span></li>
+            <li class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Gráfico RCA revisado en EDR</span></li>
+          </ul>
+          <div class="screenshot-section">
+            <div class="screenshot-title">📸 Evidencia — Capturas de Pantalla</div>
+            <div class="screenshot-upload-area" onclick="triggerUpload('ss-3-1')">
+              <input type="file" id="ss-3-1" accept="image/*" multiple onchange="handleScreenshots(this, 'grid-3-1', 'cnt-3-1')">
+              <div>📤 <strong>Haz clic para subir capturas</strong><br><span style="color:#aaa; font-size:0.78rem;">PNG, JPG — Puedes seleccionar varias</span></div>
+            </div>
+            <div class="screenshot-grid" id="grid-3-1"></div>
+            <div class="screenshot-count" id="cnt-3-1"></div>
+          </div>
+          <button class="complete-btn" onclick="completeTask(3,1)">✓ Marcar como completada</button>
+        </div>
+      </div>
+
+    </div><!-- /phase-3 -->
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ── FLOATING TIMER ── -->
+<div class="float-timer" id="floatTimer" style="display:none">
+  <div class="float-timer-dot" id="floatDot"></div>
+  <span id="floatTimerDisplay">00:00:00</span>
+</div>
+
+<script>
+  const TOTAL_TASKS = 14;
+  const phaseTaskMap = { 0: [0,1,2], 1: [0,1], 2: [0,1,2,3,4,5,6], 3: [0,1] };
+  let completedTasks = new Set();
+
+  // ── PARTICIPANT STATE ──
+  let participant = { name: '', email: '' };
+  let timerStart = null;
+  let timerInterval = null;
+  let labFinished = false;
+
+  // In-memory leaderboard (resets on page refresh; for persistent use a backend)
+  let leaderboard = [];
+
+  // ── LOGIN ──
+  function doLogin() {
+    const name  = document.getElementById('loginName').value.trim();
+    const email = document.getElementById('loginEmail').value.trim();
+    const err   = document.getElementById('loginError');
+
+    if (!name) { err.textContent = '⚠️ Ingresa tu nombre completo.'; return; }
+    if (!email || !email.includes('@')) { err.textContent = '⚠️ Ingresa un correo válido.'; return; }
+
+    participant = { name, email };
+    document.getElementById('loginOverlay').classList.add('hidden');
+
+    // Show timer and participant name
+    document.getElementById('timerParticipant').style.display = '';
+    document.getElementById('participantNameDisplay').textContent = name;
+    document.getElementById('timerStatus').textContent = 'Tiempo en curso — ¡Buena suerte!';
+    document.getElementById('floatTimer').style.display = 'flex';
+
+    // Start timer
+    timerStart = Date.now();
+    timerInterval = setInterval(tickTimer, 1000);
+  }
+
+  // Allow Enter key on login fields
+  document.getElementById('loginName').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginEmail').focus(); });
+  document.getElementById('loginEmail').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+  // ── TIMER ──
+  function tickTimer() {
+    const elapsed = Math.floor((Date.now() - timerStart) / 1000);
+    const display = formatTime(elapsed);
+    document.getElementById('timerDisplay').textContent = display;
+    document.getElementById('timerDisplay').className = 'timer-display running';
+    document.getElementById('floatTimerDisplay').textContent = display;
+  }
+
+  function formatTime(secs) {
+    const h = String(Math.floor(secs / 3600)).padStart(2, '0');
+    const m = String(Math.floor((secs % 3600) / 60)).padStart(2, '0');
+    const s = String(secs % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  }
+
+  function stopTimer() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    document.getElementById('timerDisplay').className = 'timer-display stopped';
+    document.getElementById('floatDot').style.animation = 'none';
+    document.getElementById('floatDot').style.background = '#ffd77a';
+  }
+
+  // ── FINISH ──
+  function triggerFinish() {
+    if (labFinished) return;
+    labFinished = true;
+    stopTimer();
+
+    const elapsed = Math.floor((Date.now() - timerStart) / 1000);
+    const timeStr = formatTime(elapsed);
+
+    // Add to leaderboard
+    leaderboard.push({ name: participant.name, email: participant.email, time: elapsed, timeStr });
+    leaderboard.sort((a, b) => a.time - b.time);
+    renderLeaderboard();
+
+    // Show finish modal
+    const rank = leaderboard.findIndex(e => e.email === participant.email && e.time === elapsed) + 1;
+    document.getElementById('finishTime').textContent = timeStr;
+    const rankMsg = rank === 1
+      ? '🥇 ¡Primer lugar! Fuiste el más rápido del grupo.'
+      : rank === 2 ? '🥈 Segundo lugar — ¡Excelente tiempo!'
+      : rank === 3 ? '🥉 Tercer lugar — ¡Buen trabajo!'
+      : `🏅 Puesto ${rank} en el marcador — ¡Laboratorio completado!`;
+    document.getElementById('finishRank').textContent = rankMsg;
+    document.getElementById('finishOverlay').classList.add('open');
+  }
+
+  function renderLeaderboard() {
+    const list = document.getElementById('leaderboardList');
+    if (!leaderboard.length) {
+      list.innerHTML = '<div class="lb-empty">Nadie ha terminado aún</div>';
+      return;
+    }
+    const rankClasses = ['gold', 'silver', 'bronze'];
+    list.innerHTML = leaderboard.map((e, i) => `
+      <div class="leaderboard-row">
+        <div class="lb-rank ${rankClasses[i] || ''}">${i + 1}</div>
+        <div class="lb-name">${e.name}</div>
+        <div class="lb-time">${e.timeStr}</div>
+        ${i === 0 ? '<span class="lb-badge">🏆 Líder</span>' : ''}
+      </div>
+    `).join('');
+  }
+
+  // ── SCREENSHOTS ──
+  function triggerUpload(id) {
+    // Clicking the area triggers the file input inside
+  }
+  function handleScreenshots(input, gridId, cntId) {
+    const grid = document.getElementById(gridId);
+    const cnt  = document.getElementById(cntId);
+    const files = Array.from(input.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'screenshot-thumb';
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.alt = file.name;
+        const del = document.createElement('button');
+        del.className = 'screenshot-thumb-del';
+        del.textContent = '✕';
+        del.onclick = () => { thumb.remove(); updateCount(gridId, cntId); };
+        thumb.appendChild(img);
+        thumb.appendChild(del);
+        grid.appendChild(thumb);
+        updateCount(gridId, cntId);
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+  function updateCount(gridId, cntId) {
+    const count = document.getElementById(gridId).querySelectorAll('.screenshot-thumb').length;
+    const el = document.getElementById(cntId);
+    el.textContent = count > 0 ? `📎 ${count} captura${count !== 1 ? 's' : ''} adjunta${count !== 1 ? 's' : ''}` : '';
+  }
+
+  // ── NAV / PHASE ──
+  function showPhase(idx) {
+    document.querySelectorAll('.phase-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('phase-' + idx).classList.add('active');
+    document.getElementById('nav-' + idx).classList.add('active');
+  }
+
+  function toggleTask(header) {
+    const card = header.closest('.task-card');
+    const isOpen = card.classList.contains('open');
+    document.querySelectorAll('.task-card.open').forEach(c => c.classList.remove('open'));
+    if (!isOpen) card.classList.add('open');
+  }
+
+  function toggleCheck(item) {
+    item.classList.toggle('checked');
+    item.querySelector('.check-box').textContent = item.classList.contains('checked') ? '✓' : '';
+  }
+
+  function completeTask(phase, taskIdx) {
+    const key  = phase + '-' + taskIdx;
+    const card = document.getElementById('task-' + key);
+    const btn  = card.querySelector('.complete-btn');
+
+    if (!completedTasks.has(key)) {
+      completedTasks.add(key);
+      card.classList.add('completed');
+      btn.textContent = '✓ Completada';
+      btn.classList.add('done');
+      card.querySelectorAll('.check-item:not(.checked)').forEach(ci => {
+        ci.classList.add('checked');
+        ci.querySelector('.check-box').textContent = '✓';
+      });
+    } else {
+      completedTasks.delete(key);
+      card.classList.remove('completed');
+      btn.textContent = '✓ Marcar como completada';
+      btn.classList.remove('done');
+      labFinished = false; // Allow re-finish if un-completing last task
+    }
+    updateProgress();
+
+    // Check if all tasks done
+    if (completedTasks.size === TOTAL_TASKS && !labFinished && timerStart) {
+      triggerFinish();
+    }
+  }
+
+  function updateProgress() {
+    const count = completedTasks.size;
+    const pct   = Math.round((count / TOTAL_TASKS) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = count + ' / ' + TOTAL_TASKS + ' tareas completadas';
+
+    [0,1,2,3].forEach(phase => {
+      const tasks    = phaseTaskMap[phase];
+      const done     = tasks.filter(t => completedTasks.has(phase + '-' + t)).length;
+      const check    = document.getElementById('nav-check-' + phase);
+      const allDone  = done === tasks.length;
+      check.classList.toggle('done', allDone);
+      check.textContent = allDone ? '✓' : '';
+    });
+  }
+</script>
+</body>
+</html>
