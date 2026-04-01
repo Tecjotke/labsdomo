@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Laboratorio Sophos SCE</title>
+  <link rel="stylesheet" href="admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div class="login-container" id="loginContainer">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">🛡️</div>
+        <h1>Panel Administrativo</h1>
+        <p>Laboratorio Sophos Certified Engineer</p>
+      </div>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" placeholder="admin@empresa.com" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-login" id="btnLogin">
+          <span>Iniciar Sesión</span>
+        </button>
+        <div class="login-error" id="loginError"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard-container hidden" id="dashboardContainer">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">🛡️</div>
+        <div class="sidebar-title">
+          <h2>Sophos Lab</h2>
+          <span>Panel Admin</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="overview" onclick="showSection('overview')">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a href="#" class="nav-item" data-section="participants" onclick="showSection('participants')">
+          <span class="nav-icon">👥</span> Participantes
+        </a>
+        <a href="#" class="nav-item" data-section="analytics" onclick="showSection('analytics')">
+          <span class="nav-icon">📈</span> Analíticas
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar">👤</div>
+          <div class="user-details">
+            <span class="user-name" id="userEmail">Admin</span>
+            <span class="user-role">Administrador</span>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="logout()">
+          🚪 Cerrar Sesión
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="main-header">
+        <div class="header-left">
+          <h1 id="sectionTitle">Dashboard</h1>
+          <span class="header-date" id="currentDate"></span>
+        </div>
+        <div class="header-right">
+          <button class="btn-refresh" onclick="refreshData()">
+            🔄 Actualizar
+          </button>
+          <button class="btn-export" onclick="exportData()">
+            📥 Exportar CSV
+          </button>
+        </div>
+      </header>
+
+      <!-- Overview Section -->
+      <section class="section active" id="section-overview">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">👥</div>
+            <div class="stat-info">
+              <span class="stat-value" id="totalParticipants">0</span>
+              <span class="stat-label">Total Participantes</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">📅</div>
+            <div class="stat-info">
+              <span class="stat-value" id="todayCount">0</span>
+              <span class="stat-label">Hoy</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">📆</div>
+            <div class="stat-info">
+              <span class="stat-value" id="weekCount">0</span>
+              <span class="stat-label">Esta semana</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">🗓️</div>
+            <div class="stat-info">
+              <span class="stat-value" id="monthCount">0</span>
+              <span class="stat-label">Este mes</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Time Stats -->
+        <div class="cards-row">
+          <div class="card time-stats">
+            <h3>⏱️ Estadísticas de Tiempo</h3>
+            <div class="time-grid">
+              <div class="time-item best">
+                <span class="time-label">🥇 Mejor Tiempo</span>
+                <span class="time-value" id="bestTime">--:--:--</span>
+              </div>
+              <div class="time-item average">
+                <span class="time-label">📊 Promedio</span>
+                <span class="time-value" id="avgTime">--:--:--</span>
+              </div>
+              <div class="time-item median">
+                <span class="time-label">📈 Mediana</span>
+                <span class="time-value" id="medianTime">--:--:--</span>
+              </div>
+              <div class="time-item worst">
+                <span class="time-label">🐢 Más Lento</span>
+                <span class="time-value" id="worstTime">--:--:--</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card distribution">
+            <h3>📊 Distribución de Rendimiento</h3>
+            <div class="distribution-bars">
+              <div class="dist-item">
+                <div class="dist-label">
+                  <span>🚀 Rápidos</span>
+                  <span id="fastCount">0</span>
+                </div>
+                <div class="dist-bar">
+                  <div class="dist-fill fast" id="fastBar" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="dist-item">
+                <div class="dist-label">
+                  <span>⚡ Normales</span>
+                  <span id="mediumCount">0</span>
+                </div>
+                <div class="dist-bar">
+                  <div class="dist-fill medium" id="mediumBar" style="width: 0%"></div>
+                </div>
+              </div>
+              <div class="dist-item">
+                <div class="dist-label">
+                  <span>🐢 Lentos</span>
+                  <span id="slowCount">0</span>
+                </div>
+                <div class="dist-bar">
+                  <div class="dist-fill slow" id="slowBar" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Performers & Recent Activity -->
+        <div class="cards-row">
+          <div class="card top-performers">
+            <h3>🏆 Top 10 Mejores Tiempos</h3>
+            <div class="performers-list" id="topPerformersList">
+              <div class="loading">Cargando...</div>
+            </div>
+          </div>
+
+          <div class="card recent-activity">
+            <h3>🕐 Actividad Reciente</h3>
+            <div class="activity-list" id="recentActivityList">
+              <div class="loading">Cargando...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Participants Section -->
+      <section class="section" id="section-participants">
+        <div class="card full-width">
+          <div class="card-header">
+            <h3>👥 Lista de Participantes</h3>
+            <div class="search-box">
+              <input type="text" id="searchInput" placeholder="Buscar por nombre o email..." oninput="debounceSearch()">
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th onclick="sortTable('name')">Nombre ↕</th>
+                  <th onclick="sortTable('email')">Email ↕</th>
+                  <th onclick="sortTable('time_seconds')">Tiempo ↕</th>
+                  <th onclick="sortTable('completed_at')">Fecha ↕</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="participantsTable">
+                <tr><td colspan="6" class="loading">Cargando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </section>
+
+      <!-- Analytics Section -->
+      <section class="section" id="section-analytics">
+        <div class="cards-row">
+          <div class="card chart-card">
+            <h3>📈 Tendencia Diaria (Últimos 30 días)</h3>
+            <canvas id="dailyTrendChart"></canvas>
+          </div>
+        </div>
+        <div class="cards-row">
+          <div class="card chart-card">
+            <h3>🕐 Distribución por Hora</h3>
+            <canvas id="hourlyChart"></canvas>
+          </div>
+          <div class="card domains-card">
+            <h3>📧 Top Dominios de Email</h3>
+            <div class="domains-list" id="domainsList">
+              <div class="loading">Cargando...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal-card">
+      <h3>⚠️ Confirmar Eliminación</h3>
+      <p>¿Estás seguro de que deseas eliminar este participante? Esta acción no se puede deshacer.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+        <button class="btn-delete" onclick="confirmDelete()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

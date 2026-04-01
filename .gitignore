@@ -1,0 +1,22 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (nunca subir a git)
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# Backup files
+*.backup
+index_backup.html
+index.html.html
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
