@@ -29,8 +29,12 @@ const ADMIN_USER = {
 // ══════════════════════════════════════════════════════════════════════════════
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/admin', express.static(path.join(__dirname, 'admin')));
+
+// Servir archivos estáticos - ajustado para Vercel
+if (process.env.NODE_ENV !== 'production') {
+  app.use(express.static(path.join(__dirname, 'public')));
+  app.use('/admin', express.static(path.join(__dirname, 'admin')));
+}
 
 // Middleware JWT
 function authenticateToken(req, res, next) {
@@ -485,17 +489,20 @@ function maskEmail(email) {
 // RUTAS DE PÁGINAS
 // ══════════════════════════════════════════════════════════════════════════════
 
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin', 'index.html'));
-});
+// Solo para desarrollo local
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin', 'index.html'));
+  });
 
-app.get('/admin/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin', 'index.html'));
-});
+  app.get('/admin/*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin', 'index.html'));
+  });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
+}
 
 // ══════════════════════════════════════════════════════════════════════════════
 // INICIAR SERVIDOR
@@ -512,14 +519,22 @@ async function startServer() {
 
   const supabaseInitialized = initSupabase();
   if (supabaseInitialized) {
-    await testSupabaseConnection();
+  // Solo iniciar servidor si no está en Vercel (serverless)
+  if (process.env.VERCEL !== '1') {
+    app.listen(PORT, () => {
+      console.log(`\n🚀 Servidor: http://localhost:${PORT}`);
+      console.log(`🔐 Admin: http://localhost:${PORT}/admin`);
+      console.log('\n══════════════════════════════════════════════════════════════\n');
+    });
+  } else {
+    console.log('🚀 Running on Vercel Serverless');
   }
+}
 
-  app.listen(PORT, () => {
-    console.log(`\n🚀 Servidor: http://localhost:${PORT}`);
-    console.log(`🔐 Admin: http://localhost:${PORT}/admin`);
-    console.log('\n══════════════════════════════════════════════════════════════\n');
-  });
+startServer();
+
+// Exportar para Vercel
+module.exports = app
 }
 
 startServer();
