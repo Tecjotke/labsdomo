@@ -208,6 +208,31 @@ El panel administrativo muestra:
 
 ## 🌐 Despliegue
 
+### Vercel (Recomendado)
+
+1. **Conecta tu repositorio a Vercel**
+   - Ve a [vercel.com](https://vercel.com)
+   - Importa tu repositorio de GitHub
+   - Vercel detectará automáticamente el proyecto
+
+2. **Configura las Variables de Entorno**
+   En Settings > Environment Variables, añade:
+   ```
+   SUPABASE_URL=https://tu-proyecto.supabase.co
+   SUPABASE_ANON_KEY=tu-anon-key
+   ADMIN_EMAIL=preventa2@domotes.com
+   ADMIN_PASSWORD=S0ph0s@Dmt2026!
+   JWT_SECRET=tu-secret-key-muy-larga
+   NODE_ENV=production
+   ```
+
+3. **Deploy**
+   - Vercel desplegará automáticamente
+   - Tu app estará en: `https://tu-proyecto.vercel.app`
+   - Admin en: `https://tu-proyecto.vercel.app/admin`
+
+**Nota:** El archivo `vercel.json` ya está configurado para enrutar correctamente.
+
 ### Railway / Render / Heroku
 
 1. Conecta tu repositorio
