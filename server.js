@@ -519,22 +519,22 @@ async function startServer() {
 
   const supabaseInitialized = initSupabase();
   if (supabaseInitialized) {
-  // Solo iniciar servidor si no está en Vercel (serverless)
-  if (process.env.VERCEL !== '1') {
+    await testSupabaseConnection();
+  }
+
+  // Solo iniciar servidor si no está en producción (Vercel)
+  if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
       console.log(`\n🚀 Servidor: http://localhost:${PORT}`);
       console.log(`🔐 Admin: http://localhost:${PORT}/admin`);
       console.log('\n══════════════════════════════════════════════════════════════\n');
     });
   } else {
-    console.log('🚀 Running on Vercel Serverless');
+    console.log('🚀 Servidor en modo serverless');
   }
 }
 
 startServer();
 
 // Exportar para Vercel
-module.exports = app
-}
-
-startServer();
+module.exports = app;
