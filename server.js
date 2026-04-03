@@ -19,9 +19,12 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-change-me';
 const JWT_EXPIRES = '24h';
 
+// Hash calculado de forma síncrona al iniciar el módulo
+// para que esté disponible desde la primera petición en Vercel
+const ADMIN_PASS  = process.env.ADMIN_PASSWORD || 'S0ph0s@Dmt2026!';
 const ADMIN_USER = {
   email: process.env.ADMIN_EMAIL || 'preventa2@domotes.com',
-  passwordHash: null
+  passwordHash: bcrypt.hashSync(ADMIN_PASS, 10)
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -213,6 +216,28 @@ app.get('/api/stats', async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false });
   }
+});
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// API SESIÓN DE LABORATORIO (backup en servidor además del localStorage)
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Almacenamiento en memoria (se pierde al reiniciar, localStorage es la fuente primaria)
+const labSessions = new Map();
+
+app.post('/api/session', (req, res) => {
+  const { email, name, timerStart, tasks, finished } = req.body;
+  if (!email) return res.status(400).json({ success: false, error: 'email requerido' });
+  labSessions.set(email.toLowerCase(), { email, name, timerStart, tasks, finished, updatedAt: Date.now() });
+  res.json({ success: true });
+});
+
+app.get('/api/session/:email', (req, res) => {
+  const key = req.params.email.toLowerCase();
+  const session = labSessions.get(key);
+  if (!session) return res.status(404).json({ success: false, error: 'No encontrado' });
+  res.json({ success: true, data: session });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -513,9 +538,7 @@ async function startServer() {
   console.log('   LABORATORIO SOPHOS CERTIFIED ENGINEER - SERVER');
   console.log('══════════════════════════════════════════════════════════════\n');
 
-  const adminPassword = process.env.ADMIN_PASSWORD || 'S0ph0s@Dmt2026!';
-  ADMIN_USER.passwordHash = await bcrypt.hash(adminPassword, 10);
-  console.log(`👤 Admin: ${ADMIN_USER.email}`);
+  console.log(`👤 Admin: ${ADMIN_USER.email} (hash precargado)`);
 
   const supabaseInitialized = initSupabase();
   if (supabaseInitialized) {
