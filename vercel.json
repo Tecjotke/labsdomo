@@ -12,6 +12,10 @@
     {
       "src": "admin/**",
       "use": "@vercel/static"
+    },
+    {
+      "src": "encuesta/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -37,11 +41,11 @@
     },
     {
       "src": "/encuesta",
-      "dest": "/public/encuesta/index.html"
+      "dest": "/encuesta/index.html"
     },
     {
       "src": "/encuesta/(.*)",
-      "dest": "/public/encuesta/$1"
+      "dest": "/encuesta/$1"
     },
     {
       "src": "/(.*\\.(css|js|html|png|jpg|jpeg|svg|ico|json|woff|woff2|ttf|eot))",

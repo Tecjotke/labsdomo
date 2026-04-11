@@ -700,10 +700,10 @@ if (process.env.NODE_ENV !== 'production') {
     res.sendFile(path.join(__dirname, 'admin', 'index.html'));
   });
   app.get('/encuesta', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'encuesta', 'index.html'));
+    res.sendFile(path.join(__dirname, 'encuesta', 'index.html'));
   });
   app.get('/encuesta/*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'encuesta', 'index.html'));
+    res.sendFile(path.join(__dirname, 'encuesta', 'index.html'));
   });
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
