@@ -20,15 +20,31 @@
       "dest": "/api/index.js"
     },
     {
-      "src": "/admin/(.*)",
-      "dest": "/admin/$1"
+      "src": "/admin/admin\\.css",
+      "dest": "/admin/admin.css"
+    },
+    {
+      "src": "/admin/admin\\.js",
+      "dest": "/admin/admin.js"
     },
     {
       "src": "/admin",
       "dest": "/admin/index.html"
     },
     {
-      "src": "/(.*\\.(css|js|html|png|jpg|jpeg|svg|ico|json))",
+      "src": "/admin/(.*)",
+      "dest": "/admin/index.html"
+    },
+    {
+      "src": "/encuesta",
+      "dest": "/public/encuesta/index.html"
+    },
+    {
+      "src": "/encuesta/(.*)",
+      "dest": "/public/encuesta/$1"
+    },
+    {
+      "src": "/(.*\\.(css|js|html|png|jpg|jpeg|svg|ico|json|woff|woff2|ttf|eot))",
       "dest": "/public/$1"
     },
     {

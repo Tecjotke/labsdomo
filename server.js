@@ -219,25 +219,196 @@ app.get('/api/stats', async (req, res) => {
 });
 
 
-// ══════════════════════════════════════════════════════════════════════════════
-// API SESIÓN DE LABORATORIO (backup en servidor además del localStorage)
-// ══════════════════════════════════════════════════════════════════════════════
-
-// Almacenamiento en memoria (se pierde al reiniciar, localStorage es la fuente primaria)
+// Almacenamiento en memoria de sesiones activas
 const labSessions = new Map();
 
+// ══════════════════════════════════════════════════════════════════════════════
+// API ENCUESTA DE SATISFACCIÓN
+// ══════════════════════════════════════════════════════════════════════════════
+
+app.post('/api/surveys', async (req, res) => {
+  const { name, email, company, role, alimentacion, salon, documentacion, laboratorio, instructor, nps, comments } = req.body;
+
+  // Validar campos requeridos
+  const required = { alimentacion, salon, documentacion, laboratorio, instructor };
+  for (const [k, v] of Object.entries(required)) {
+    if (v === undefined || v === null || v < 1 || v > 5) {
+      return res.status(400).json({ success: false, error: `Campo requerido: ${k} (1-5)` });
+    }
+  }
+
+  if (nps === undefined || nps < 0 || nps > 10) {
+    return res.status(400).json({ success: false, error: 'nps requerido (0-10)' });
+  }
+
+  if (!supabase) {
+    return res.status(503).json({ success: false, error: 'Base de datos no disponible' });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('lab_surveys')
+      .insert([{
+        name: name?.trim()    || null,
+        email: email?.toLowerCase().trim() || null,
+        company: company?.trim() || null,
+        role: role?.trim()    || null,
+        alimentacion: parseInt(alimentacion),
+        salon:         parseInt(salon),
+        documentacion: parseInt(documentacion),
+        laboratorio:   parseInt(laboratorio),
+        instructor:    parseInt(instructor),
+        nps:           parseInt(nps),
+        comments:      comments?.trim() || null
+      }])
+      .select();
+
+    if (error) throw error;
+    console.log(`📝 Encuesta registrada: ${name || 'Anónimo'}`);
+    res.status(201).json({ success: true, data: data[0] });
+  } catch (error) {
+    console.error('❌ Error encuesta:', error);
+    res.status(500).json({ success: false, error: 'Error al guardar encuesta' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// API SESIONES EN VIVO (para el admin)
+// ══════════════════════════════════════════════════════════════════════════════
+
+app.get('/api/admin/live', authenticateToken, async (req, res) => {
+  try {
+    // Participantes con sesión activa (no terminaron) desde labSessions en memoria
+    const active = [];
+    const now = Date.now();
+
+    for (const [email, session] of labSessions.entries()) {
+      // Solo mostrar sesiones activas en las últimas 12 horas
+      if (now - session.updatedAt > 12 * 3600 * 1000) continue;
+      active.push({
+        name:          session.name   || email,
+        email:         email,
+        timerStart:    session.timerStart,
+        tasksCompleted: (session.tasks || []).length,
+        finished:      session.finished || false,
+        timeFormatted: session.finished && session.timerStart
+          ? formatTime(Math.floor((session.updatedAt - session.timerStart) / 1000))
+          : null,
+        updatedAt: session.updatedAt
+      });
+    }
+
+    // Sort: active first, then by updatedAt desc
+    active.sort((a, b) => {
+      if (a.finished !== b.finished) return a.finished ? 1 : -1;
+      return b.updatedAt - a.updatedAt;
+    });
+
+    // Count finished today from DB
+    let finishedToday = 0;
+    if (supabase) {
+      const todayStart = new Date();
+      todayStart.setHours(0,0,0,0);
+      const { count } = await supabase
+        .from('lab_participants')
+        .select('*', { count: 'exact', head: true })
+        .gte('completed_at', todayStart.toISOString());
+      finishedToday = count || 0;
+    }
+
+    res.json({ success: true, data: active, finished: finishedToday });
+  } catch (error) {
+    console.error('❌ Error live:', error);
+    res.status(500).json({ success: false, data: [], finished: 0 });
+  }
+});
+
+// Actualizar sesión desde el cliente (llamado periódicamente)
 app.post('/api/session', (req, res) => {
   const { email, name, timerStart, tasks, finished } = req.body;
   if (!email) return res.status(400).json({ success: false, error: 'email requerido' });
-  labSessions.set(email.toLowerCase(), { email, name, timerStart, tasks, finished, updatedAt: Date.now() });
+  const existing = labSessions.get(email.toLowerCase()) || {};
+  labSessions.set(email.toLowerCase(), {
+    ...existing,
+    email: email.toLowerCase(),
+    name: name || existing.name,
+    timerStart: timerStart || existing.timerStart,
+    tasks: tasks || existing.tasks || [],
+    finished: finished !== undefined ? finished : (existing.finished || false),
+    updatedAt: Date.now()
+  });
   res.json({ success: true });
 });
 
 app.get('/api/session/:email', (req, res) => {
-  const key = req.params.email.toLowerCase();
-  const session = labSessions.get(key);
-  if (!session) return res.status(404).json({ success: false, error: 'No encontrado' });
+  const session = labSessions.get(req.params.email.toLowerCase());
+  if (!session) return res.status(404).json({ success: false });
   res.json({ success: true, data: session });
+});
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// API ADMIN — ENCUESTAS
+// ══════════════════════════════════════════════════════════════════════════════
+
+app.get('/api/admin/surveys', authenticateToken, async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false });
+  try {
+    const { data, error } = await supabase
+      .from('lab_surveys')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Calcular promedios por categoría
+    const cats = ['alimentacion','salon','documentacion','laboratorio','instructor'];
+    const summary = { count: data.length };
+    cats.forEach(cat => {
+      summary[cat] = data.length > 0
+        ? Math.round((data.reduce((s, r) => s + (r[cat] || 0), 0) / data.length) * 10) / 10
+        : 0;
+    });
+
+    res.json({ success: true, data, summary });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/admin/surveys/export', authenticateToken, async (req, res) => {
+  if (!supabase) return res.status(503).json({ success: false });
+  try {
+    const { data, error } = await supabase
+      .from('lab_surveys')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const headers = ['#','Nombre','Email','Empresa','Cargo','Alimentación','Salón','Documentación','Laboratorio','Instructor','NPS','Promedio','Comentarios','Fecha'];
+    const rows = data.map((s, i) => {
+      const avg = ((s.alimentacion + s.salon + s.documentacion + s.laboratorio + s.instructor) / 5).toFixed(1);
+      return [
+        i+1,
+        `"${s.name||''}"`,
+        s.email||'',
+        `"${s.company||''}"`,
+        `"${s.role||''}"`,
+        s.alimentacion, s.salon, s.documentacion, s.laboratorio, s.instructor,
+        s.nps, avg,
+        `"${(s.comments||'').replace(/"/g,"'")}"`,
+        new Date(s.created_at).toLocaleString('es-CO')
+      ].join(',');
+    });
+
+    const csv = [headers.join(','), ...rows].join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=encuestas-${new Date().toISOString().split('T')[0]}.csv`);
+    res.send(csv);
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -514,16 +685,26 @@ function maskEmail(email) {
 // RUTAS DE PÁGINAS
 // ══════════════════════════════════════════════════════════════════════════════
 
-// Solo para desarrollo local
+// Rutas de páginas (desarrollo local)
 if (process.env.NODE_ENV !== 'production') {
   app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin', 'index.html'));
   });
-
+  app.get('/admin/admin.css', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin', 'admin.css'));
+  });
+  app.get('/admin/admin.js', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin', 'admin.js'));
+  });
   app.get('/admin/*', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin', 'index.html'));
   });
-
+  app.get('/encuesta', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'encuesta', 'index.html'));
+  });
+  app.get('/encuesta/*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'encuesta', 'index.html'));
+  });
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });

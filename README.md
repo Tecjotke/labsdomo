@@ -103,6 +103,32 @@ CREATE POLICY "Allow delete for authenticated" ON lab_participants
   FOR DELETE USING (true);
 ```
 
+
+### Tabla adicional para encuestas (ejecutar en Supabase SQL Editor):
+
+```sql
+CREATE TABLE lab_surveys (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT,
+  email TEXT,
+  company TEXT,
+  role TEXT,
+  alimentacion INTEGER NOT NULL CHECK (alimentacion BETWEEN 1 AND 5),
+  salon INTEGER NOT NULL CHECK (salon BETWEEN 1 AND 5),
+  documentacion INTEGER NOT NULL CHECK (documentacion BETWEEN 1 AND 5),
+  laboratorio INTEGER NOT NULL CHECK (laboratorio BETWEEN 1 AND 5),
+  instructor INTEGER NOT NULL CHECK (instructor BETWEEN 1 AND 5),
+  nps INTEGER NOT NULL CHECK (nps BETWEEN 0 AND 10),
+  comments TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_surveys_created ON lab_surveys(created_at DESC);
+ALTER TABLE lab_surveys ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow insert for all" ON lab_surveys FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow read for authenticated" ON lab_surveys FOR SELECT USING (true);
+```
+
 ### 5. Iniciar el servidor
 ```bash
 npm start
