@@ -60,6 +60,28 @@ function applyPosterImages() {
   });
 }
 
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SINCRONIZAR SESIÓN CON SERVIDOR (para vista en vivo del admin)
+// ══════════════════════════════════════════════════════════════════════════════
+
+async function syncSessionToServer() {
+  if (!participant.email || !timerStart) return;
+  try {
+    await fetch(API_BASE + '/api/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email:      participant.email,
+        name:       participant.name,
+        timerStart: timerStart,
+        tasks:      [...completedTasks],
+        finished:   labFinished
+      })
+    });
+  } catch(e) {} // silencioso — no bloquear el lab
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // API CLIENT
 // ══════════════════════════════════════════════════════════════════════════════
@@ -232,6 +254,9 @@ function launchLabUI() {
 
   // Polling leaderboard cada 30s
   setInterval(refreshLeaderboard, 30000);
+  // Sincronizar sesión con servidor cada 15s (para admin en vivo)
+  setInterval(syncSessionToServer, 15000);
+  syncSessionToServer(); // Sync inmediato al iniciar
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -287,6 +312,7 @@ async function triggerFinish() {
 
   // Persistir estado final
   ls_save(LS_FINISHED, true);
+  syncSessionToServer(); // notificar al servidor que terminó
 
   document.getElementById('finishTime').textContent = timeStr;
   document.getElementById('finishRank').innerHTML = '<span class="loading-indicator"></span> Guardando resultado...';
@@ -444,6 +470,7 @@ function completeTask(phase, taskIdx) {
   }
 
   ls_save(LS_TASKS, [...completedTasks]); // guardar inmediatamente
+  syncSessionToServer(); // actualizar servidor para admin en vivo
   updateProgress();
 
   if (completedTasks.size === TOTAL_TASKS && !labFinished && timerStart) {
