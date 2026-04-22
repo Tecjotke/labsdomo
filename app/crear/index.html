@@ -14,7 +14,7 @@ header{background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 16px;positio
 .header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .logo{width:32px;height:32px;background:#2563eb;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;flex-shrink:0}
 .brand{display:flex;align-items:center;gap:8px}
-.brand-title{font-weight:700;font-size:14px;line-height:1.2}
+.brand-title{font-weight:700;font-size:14px}
 .brand-sub{font-size:11px;color:#94a3b8}
 .back{color:#94a3b8;font-size:13px}
 .tabs{display:flex;gap:4px}
@@ -22,20 +22,16 @@ header{background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 16px;positio
 .tab.active{background:#2563eb;color:#fff}
 .main{max-width:960px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px}
 .card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px}
-.label{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
-.input{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none}
-.input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.lbl{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.inp{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none}
+.inp:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 @media(max-width:600px){.grid3{grid-template-columns:1fr}}
 .drop{border:2px dashed #cbd5e1;border-radius:12px;padding:40px;text-align:center;cursor:pointer;transition:all .2s}
 .drop:hover,.drop.over{border-color:#2563eb;background:#eff6ff}
 .drop.ready{border-color:#22c55e;background:#f0fdf4}
-.drop-icon{font-size:36px;margin-bottom:8px}
-.drop-title{font-weight:600;color:#475569}
-.drop-sub{font-size:12px;color:#94a3b8;margin-top:4px}
-.drop-formats{font-size:11px;color:#cbd5e1;margin-top:6px}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
-.btn-primary{background:#2563eb;color:#fff;width:100%;justify-content:center;padding:12px}
+.btn-primary{background:#2563eb;color:#fff;width:100%;justify-content:center;padding:12px;margin-top:12px}
 .btn-primary:hover{background:#1d4ed8}
 .btn-primary:disabled{background:#94a3b8;cursor:not-allowed}
 .btn-green{background:#16a34a;color:#fff}
@@ -45,419 +41,339 @@ header{background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 16px;positio
 .btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
 .btn-outline{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
 .btn-outline:hover{background:#e2e8f0}
-.error{background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:8px}
-.progress{color:#2563eb;font-size:13px;text-align:center;margin-top:8px;animation:pulse 1.5s ease-in-out infinite}
+.err-box{background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:8px}
+.prog{color:#2563eb;font-size:13px;text-align:center;margin-top:8px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.stats-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.prog{animation:pulse 1.5s ease-in-out infinite}
 .badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid}
-.badge-cumple{background:#d1fae5;color:#065f46;border-color:#6ee7b7}
-.badge-parcial{background:#fef9c3;color:#713f12;border-color:#fcd34d}
-.badge-nocumple{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
-.badge-eval{background:#dbeafe;color:#1e3a8a;border-color:#93c5fd}
-.badge-prod{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
-.row-card{border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:10px;transition:border-color .15s}
+.bc{background:#d1fae5;color:#065f46;border-color:#6ee7b7}
+.bp{background:#fef9c3;color:#713f12;border-color:#fcd34d}
+.bn{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.be{background:#dbeafe;color:#1e3a8a;border-color:#93c5fd}
+.bprod{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.row-card{border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:10px}
 .row-card:hover{border-color:#93c5fd}
 .row-card.saved{border-color:#c4b5fd;background:#faf5ff}
 .row-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px}
 .row-badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.row-actions{display:flex;gap:4px;flex-shrink:0}
-.row-req{font-weight:600;color:#1e293b;margin-bottom:4px;line-height:1.4}
-.row-desc{color:#475569;line-height:1.6}
-.row-url{font-size:11px;color:#2563eb;margin-top:6px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.action-btn{background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:4px;font-size:13px;color:#94a3b8}
-.action-btn:hover{background:#f1f5f9;color:#2563eb}
-.action-btn.purple:hover{color:#7c3aed}
-.results-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.actions-group{display:flex;gap:8px}
-.banco-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.banco-filters input,.banco-filters select{border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none}
-.banco-filters input{flex:1;min-width:160px}
-.banco-filters input:focus,.banco-filters select:focus{border-color:#2563eb}
-.banco-stats{font-size:12px;color:#94a3b8;margin-top:6px}
-.banco-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:10px}
-.banco-card.aprobado{border-color:#86efac}
+.row-acts{display:flex;gap:4px;flex-shrink:0}
+.abt{background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:4px;font-size:13px;color:#94a3b8}
+.abt:hover{background:#f1f5f9;color:#2563eb}
+.res-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.ag{display:flex;gap:8px}
+.bf{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.bf input,.bf select{border:1px solid #e2e8f0;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none}
+.bf input{flex:1;min-width:160px}
+.bc-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:10px}
+.bc-card.ap{border-color:#86efac}
 .empty{text-align:center;padding:60px 0;color:#94a3b8}
-.empty-icon{font-size:48px;margin-bottom:12px}
 .hidden{display:none!important}
 #toast{position:fixed;bottom:20px;right:20px;background:#1e293b;color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;z-index:999;display:none;box-shadow:0 4px 12px rgba(0,0,0,.2)}
-.page-header{display:flex;align-items:center;gap:8px}
 </style>
 </head>
 <body>
 <div id="toast"></div>
-
 <header>
   <div class="header-inner">
     <div class="brand">
-      <a href="/" class="back">← labsdomo</a>
+      <a href="/" class="back">&larr; labsdomo</a>
       <span style="color:#e2e8f0">/</span>
       <div class="logo">S</div>
       <div>
         <div class="brand-title">Analizador RFP / Pliegos</div>
-        <div class="brand-sub">DOMOTES · Sophos + Supabase</div>
+        <div class="brand-sub">DOMOTES &middot; Sophos + Supabase</div>
       </div>
     </div>
     <div class="tabs">
-      <button class="tab active" onclick="setTab('analizar')">🔍 Analizar</button>
-      <button class="tab" id="tab-banco" onclick="setTab('banco')">🗄️ Banco (<span id="banco-count">0</span>)</button>
+      <button class="tab active" id="tab-analizar">&#128269; Analizar</button>
+      <button class="tab" id="tab-banco">&#128452; Banco (<span id="banco-count">0</span>)</button>
     </div>
   </div>
 </header>
-
 <div class="main">
-
-  <!-- ANALIZAR -->
   <div id="page-analizar">
-
-    <div class="card">
-      <div class="label">API Key Anthropic</div>
+    <div class="card"><div class="lbl">API Key Anthropic</div>
       <div style="display:flex;gap:8px">
-        <input id="api-key" type="password" class="input" placeholder="sk-ant-api..." style="font-family:monospace"/>
-        <button class="btn btn-outline" onclick="toggleKey()" id="key-btn">Ver</button>
+        <input id="api-key" type="password" class="inp" placeholder="sk-ant-api..." style="font-family:monospace"/>
+        <button class="btn btn-outline" id="key-btn">Ver</button>
       </div>
     </div>
-
-    <div class="card">
-      <div class="label">Datos del Proyecto</div>
+    <div class="card"><div class="lbl">Datos del Proyecto</div>
       <div class="grid3">
-        <input id="proy-nombre" class="input" placeholder="Nombre del pliego *"/>
-        <input id="proy-cliente" class="input" placeholder="Cliente"/>
-        <select id="proy-tipo" class="input">
-          <option>Pliego</option><option>RFP</option><option>Licitacion</option><option>Requerimiento</option>
-        </select>
+        <input id="proy-nombre" class="inp" placeholder="Nombre del pliego *"/>
+        <input id="proy-cliente" class="inp" placeholder="Cliente"/>
+        <select id="proy-tipo" class="inp"><option>Pliego</option><option>RFP</option><option>Licitacion</option><option>Requerimiento</option></select>
       </div>
     </div>
-
-    <div class="card">
-      <div class="label">Documento del Cliente</div>
-      <div id="drop-zone" class="drop" onclick="document.getElementById('file-input').click()">
-        <div class="drop-icon" id="drop-icon">📎</div>
-        <div class="drop-title" id="drop-title">Arrastra el pliego aqui</div>
-        <div class="drop-sub" id="drop-sub">o haz clic para seleccionar</div>
-        <div class="drop-formats">PDF · DOCX · XLSX</div>
+    <div class="card"><div class="lbl">Documento del Cliente</div>
+      <div id="drop-zone" class="drop">
+        <div id="drop-icon" style="font-size:36px;margin-bottom:8px">&#128206;</div>
+        <div id="drop-title" style="font-weight:600;color:#475569">Arrastra el pliego aqui</div>
+        <div id="drop-sub" style="font-size:12px;color:#94a3b8;margin-top:4px">o haz clic para seleccionar</div>
+        <div style="font-size:11px;color:#cbd5e1;margin-top:6px">PDF &middot; DOCX &middot; XLSX</div>
       </div>
       <input id="file-input" type="file" accept=".pdf,.docx,.xlsx,.xls" style="display:none"/>
-      <div id="error-msg" class="error hidden"></div>
-      <button class="btn btn-primary" id="analyze-btn" style="margin-top:12px" onclick="analyze()">🔍 Extraer y Analizar Requisitos</button>
-      <div id="progress" class="progress hidden"></div>
+      <div id="err-msg" class="err-box hidden"></div>
+      <button class="btn btn-primary" id="analyze-btn">&#128269; Extraer y Analizar Requisitos</button>
+      <div id="prog" class="prog hidden"></div>
     </div>
-
     <div id="results-section" class="card hidden">
-      <div class="results-top">
-        <div class="stats-bar" id="stats-bar"></div>
-        <div class="actions-group">
-          <button class="btn btn-sm btn-purple" onclick="saveAll()">🗄️ Guardar todos</button>
-          <button class="btn btn-sm btn-green" onclick="exportXlsx()">📥 Excel</button>
+      <div class="res-top"><div id="stats-bar" class="row-badges"></div>
+        <div class="ag">
+          <button class="btn btn-sm btn-purple" id="save-all-btn">&#128452; Guardar todos</button>
+          <button class="btn btn-sm btn-green" id="export-btn">&#128229; Excel</button>
         </div>
       </div>
       <div id="rows-container"></div>
-      <button class="btn btn-green" style="width:100%;justify-content:center;margin-top:12px" onclick="exportXlsx()">📥 Exportar a Excel</button>
+      <button class="btn btn-green" id="export-btn2" style="width:100%;justify-content:center;margin-top:12px">&#128229; Exportar a Excel</button>
     </div>
   </div>
-
-  <!-- BANCO -->
   <div id="page-banco" class="hidden">
     <div class="card">
-      <div class="banco-filters">
-        <input id="busqueda" placeholder="🔍 Buscar en banco..." oninput="filterBanco()"/>
-        <select id="filtro-prod" onchange="filterBanco()" class="input" style="width:auto">
-          <option>Todos</option><option>Sophos Firewall</option><option>Sophos Endpoint</option>
-          <option>Sophos MDR</option><option>Sophos XDR/EDR</option><option>Sophos ZTNA</option>
-          <option>Sophos Email</option><option>Sophos Cloud Optix</option><option>Sophos NDR</option>
-          <option>Sophos ITDR</option><option>Sophos Central</option><option>Sophos SIEM</option>
-          <option>Multiples productos</option>
-        </select>
-        <select id="filtro-est" onchange="filterBanco()" class="input" style="width:auto">
-          <option>Todos</option><option>Cumple</option><option>Cumple parcialmente</option>
-          <option>No cumple</option><option>Requiere evaluacion</option>
-        </select>
-        <button class="btn btn-outline btn-sm" onclick="loadBanco()">🔄</button>
+      <div class="bf">
+        <input id="busqueda" placeholder="Buscar en banco..."/>
+        <select id="filtro-prod" class="inp" style="width:auto"><option>Todos</option><option>Sophos Firewall</option><option>Sophos Endpoint</option><option>Sophos MDR</option><option>Sophos XDR/EDR</option><option>Sophos ZTNA</option><option>Sophos Email</option><option>Sophos Cloud Optix</option><option>Sophos NDR</option><option>Sophos ITDR</option><option>Sophos Central</option><option>Sophos SIEM</option><option>Multiples productos</option></select>
+        <select id="filtro-est" class="inp" style="width:auto"><option>Todos</option><option>Cumple</option><option>Cumple parcialmente</option><option>No cumple</option><option>Requiere evaluacion</option></select>
+        <button class="btn btn-outline btn-sm" id="reload-banco-btn">&#128260;</button>
       </div>
-      <div class="banco-stats" id="banco-stats">Cargando...</div>
+      <div id="banco-stats" style="font-size:12px;color:#94a3b8">Cargando...</div>
     </div>
-    <div id="banco-container">
-      <div class="empty"><div class="empty-icon">🗄️</div><p>El banco esta vacio</p><p style="font-size:12px;margin-top:6px">Analiza un pliego y guarda respuestas para reutilizarlas.</p></div>
-    </div>
+    <div id="banco-container"><div class="empty"><div style="font-size:48px;margin-bottom:12px">&#128452;</div><p>El banco esta vacio</p></div></div>
   </div>
-
 </div>
-
 <script>
-var SB_URL='https://mplmmyeurhknpobtswmv.supabase.co';
-var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wbG1teWV1cmhrbnBvYnRzd212Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTA3MDMsImV4cCI6MjA5MDYyNjcwM30.kQhAz8Sedc6DhrDsfiKWArtiolLBB0rRLvj7zxj2RkA';
-var SB_H={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
-var SOPHOS=['https://docs.sophos.com/nsg/sophos-firewall/22.0/help/en-us/webhelp/onlinehelp/index.html','https://support.sophos.com/support/s/?language=en_US','https://assets.sophos.com/X24WTUEQ/at/9wbpp7hspzjv4zvnf44k3rm/sophos-firewall-bres.pdf','https://docs.sophos.com/central/customer/help/en-us/ManageYourProducts/index.html'];
-var SYS='Eres ingeniero certificado Sophos para DOMOTES/Domotea. Extrae TODOS los requisitos del documento. Responde SOLO con JSON array sin markdown: [{"requisito":"texto","producto":"producto Sophos","estado":"Cumple|Cumple parcialmente|No cumple|Requiere evaluacion","descripcion":"respuesta tecnica profesional en espanol","url":"URL docs Sophos"}]. Fuentes: '+SOPHOS.join(' ');
-
-var filePayload=null, rows=[], savedIds={}, proyId=null, bancoAll=[];
-
-function sbGet(p){return fetch(SB_URL+'/rest/v1/'+p,{headers:SB_H}).then(function(r){return r.json();});}
-function sbPost(p,b){return fetch(SB_URL+'/rest/v1/'+p,{method:'POST',headers:Object.assign({},SB_H,{'Prefer':'return=representation'}),body:JSON.stringify(b)}).then(function(r){return r.json();});}
-function sbPatch(p,b){return fetch(SB_URL+'/rest/v1/'+p,{method:'PATCH',headers:Object.assign({},SB_H,{'Prefer':'return=representation'}),body:JSON.stringify(b)}).then(function(r){return r.json();});}
-function sbDel(p){return fetch(SB_URL+'/rest/v1/'+p,{method:'DELETE',headers:SB_H});}
-
-function toast(msg,dur){var t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},dur||2500);}
-function showError(msg){var e=document.getElementById('error-msg');e.textContent=msg;e.className='error';}
-function hideError(){document.getElementById('error-msg').className='error hidden';}
-function setProgress(msg){var e=document.getElementById('progress');if(msg){e.textContent=msg;e.className='progress';}else{e.className='progress hidden';}}
-
-function badgeClass(estado){if(estado==='Cumple')return 'badge badge-cumple';if(estado==='Cumple parcialmente')return 'badge badge-parcial';if(estado==='No cumple')return 'badge badge-nocumple';return 'badge badge-eval';}
-
+var SB_URL="https://mplmmyeurhknpobtswmv.supabase.co";
+var SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wbG1teWV1cmhrbnBvYnRzd212Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTA3MDMsImV4cCI6MjA5MDYyNjcwM30.kQhAz8Sedc6DhrDsfiKWArtiolLBB0rRLvj7zxj2RkA";
+var SB_H={"Content-Type":"application/json","apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY};
+var SYS="Eres ingeniero certificado Sophos para DOMOTES. Extrae TODOS los requisitos del documento. Responde SOLO JSON array sin markdown: [{requisito,producto,estado:Cumple|Cumple parcialmente|No cumple|Requiere evaluacion,descripcion,url}]. Fuentes: https://docs.sophos.com/nsg/sophos-firewall/22.0/help/en-us/webhelp/onlinehelp/index.html https://support.sophos.com/support/s/?language=en_US";
+var filePayload=null,rows=[],savedIds={},proyId=null,bancoAll=[];
+function sbGet(p){return fetch(SB_URL+"/rest/v1/"+p,{headers:SB_H}).then(function(r){return r.json();});}
+function sbPost(p,b){return fetch(SB_URL+"/rest/v1/"+p,{method:"POST",headers:Object.assign({},SB_H,{"Prefer":"return=representation"}),body:JSON.stringify(b)}).then(function(r){return r.json();});}
+function sbPatch(p,b){return fetch(SB_URL+"/rest/v1/"+p,{method:"PATCH",headers:Object.assign({},SB_H,{"Prefer":"return=representation"}),body:JSON.stringify(b)}).then(function(r){return r.json();});}
+function sbDel(p){return fetch(SB_URL+"/rest/v1/"+p,{method:"DELETE",headers:SB_H});}
+function toast(m,d){var t=document.getElementById("toast");t.textContent=m;t.style.display="block";setTimeout(function(){t.style.display="none";},d||2500);}
+function showErr(m){var e=document.getElementById("err-msg");e.textContent=m;e.className="err-box";}
+function hideErr(){document.getElementById("err-msg").className="err-box hidden";}
+function setProg(m){var e=document.getElementById("prog");if(m){e.textContent=m;e.className="prog";}else{e.className="prog hidden";}}
+function bCls(s){if(s==="Cumple")return "badge bc";if(s==="Cumple parcialmente")return "badge bp";if(s==="No cumple")return "badge bn";return "badge be";}
 function setTab(t){
-  document.getElementById('page-analizar').className=t==='analizar'?'':'hidden';
-  document.getElementById('page-banco').className=t==='banco'?'':'hidden';
-  var tabs=document.querySelectorAll('.tab');
-  tabs[0].className=t==='analizar'?'tab active':'tab';
-  tabs[1].className=t==='banco'?'tab active':'tab';
-  if(t==='banco')loadBanco();
+  document.getElementById("page-analizar").className=t==="analizar"?"":"hidden";
+  document.getElementById("page-banco").className=t==="banco"?"":"hidden";
+  document.getElementById("tab-analizar").className=t==="analizar"?"tab active":"tab";
+  document.getElementById("tab-banco").className=t==="banco"?"tab active":"tab";
+  if(t==="banco")loadBanco();
 }
-
-function toggleKey(){
-  var i=document.getElementById('api-key'),b=document.getElementById('key-btn');
-  i.type=i.type==='password'?'text':'password';
-  b.textContent=i.type==='password'?'Ver':'Ocultar';
-}
-
-var dropZone=document.getElementById('drop-zone');
-dropZone.addEventListener('dragover',function(e){e.preventDefault();dropZone.classList.add('over');});
-dropZone.addEventListener('dragleave',function(){dropZone.classList.remove('over');});
-dropZone.addEventListener('drop',function(e){e.preventDefault();dropZone.classList.remove('over');processFile(e.dataTransfer.files[0]);});
-document.getElementById('file-input').addEventListener('change',function(e){processFile(e.target.files[0]);});
-
+document.getElementById("tab-analizar").addEventListener("click",function(){setTab("analizar");});
+document.getElementById("tab-banco").addEventListener("click",function(){setTab("banco");});
+document.getElementById("key-btn").addEventListener("click",function(){var i=document.getElementById("api-key"),b=document.getElementById("key-btn");i.type=i.type==="password"?"text":"password";b.textContent=i.type==="password"?"Ver":"Ocultar";});
+var dz=document.getElementById("drop-zone");
+dz.addEventListener("dragover",function(e){e.preventDefault();dz.classList.add("over");});
+dz.addEventListener("dragleave",function(){dz.classList.remove("over");});
+dz.addEventListener("drop",function(e){e.preventDefault();dz.classList.remove("over");processFile(e.dataTransfer.files[0]);});
+dz.addEventListener("click",function(){document.getElementById("file-input").click();});
+document.getElementById("file-input").addEventListener("change",function(e){processFile(e.target.files[0]);});
 function processFile(f){
   if(!f)return;
-  hideError();filePayload=null;
-  var ext=f.name.split('.').pop().toLowerCase();
-  if(ext==='pdf'){
+  hideErr();filePayload=null;
+  var ext=f.name.split(".").pop().toLowerCase();
+  if(ext==="pdf"){
     var r=new FileReader();
     r.onload=function(e){
-      var b64=btoa(new Uint8Array(e.target.result).reduce(function(d,b){return d+String.fromCharCode(b);},''));
-      filePayload={type:'pdf',data:b64};
+      var arr=new Uint8Array(e.target.result),str="";
+      for(var i=0;i<arr.length;i++)str+=String.fromCharCode(arr[i]);
+      filePayload={type:"pdf",data:btoa(str)};
       setReady(f.name);
     };
     r.readAsArrayBuffer(f);
-  } else if(ext==='docx'){
+  } else if(ext==="docx"){
     var fr=new FileReader();
     fr.onload=function(e){
       mammoth.extractRawText({arrayBuffer:e.target.result}).then(function(res){
-        filePayload={type:'text',data:res.value};
+        filePayload={type:"text",data:res.value};
         setReady(f.name);
-      }).catch(function(){showError('No se pudo leer el .docx');});
+      }).catch(function(){showErr("No se pudo leer el .docx");});
     };
     fr.readAsArrayBuffer(f);
-  } else if(ext==='xlsx'||ext==='xls'){
+  } else if(ext==="xlsx"||ext==="xls"){
     var fx=new FileReader();
     fx.onload=function(e){
       var wb=XLSX.read(e.target.result);
-      filePayload={type:'text',data:XLSX.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[0]])};
+      filePayload={type:"text",data:XLSX.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[0]])};
       setReady(f.name);
     };
     fx.readAsArrayBuffer(f);
   } else {
-    showError('Formato no soportado. Usa PDF, DOCX o XLSX.');
+    showErr("Formato no soportado. Usa PDF, DOCX o XLSX.");
   }
 }
-
 function setReady(name){
-  var z=document.getElementById('drop-zone');
-  z.className='drop ready';
-  document.getElementById('drop-icon').textContent='✅';
-  document.getElementById('drop-title').textContent=name;
-  document.getElementById('drop-title').style.color='#16a34a';
-  document.getElementById('drop-sub').textContent='Listo. Clic para cambiar.';
+  dz.className="drop ready";
+  document.getElementById("drop-icon").textContent="\u2705";
+  document.getElementById("drop-title").textContent=name;
+  document.getElementById("drop-title").style.color="#16a34a";
+  document.getElementById("drop-sub").textContent="Listo. Clic para cambiar.";
 }
-
+document.getElementById("analyze-btn").addEventListener("click",function(){analyze();});
+document.getElementById("save-all-btn").addEventListener("click",function(){saveAll();});
+document.getElementById("export-btn").addEventListener("click",function(){exportXlsx();});
+document.getElementById("export-btn2").addEventListener("click",function(){exportXlsx();});
+document.getElementById("busqueda").addEventListener("input",function(){filterBanco();});
+document.getElementById("filtro-prod").addEventListener("change",function(){filterBanco();});
+document.getElementById("filtro-est").addEventListener("change",function(){filterBanco();});
+document.getElementById("reload-banco-btn").addEventListener("click",function(){loadBanco();});
 function analyze(){
-  var apiKey=document.getElementById('api-key').value.trim();
-  if(!apiKey){showError('Ingresa tu API Key de Anthropic.');return;}
-  if(!filePayload){showError('Adjunta un documento primero.');return;}
-  hideError();
-  var btn=document.getElementById('analyze-btn');
-  btn.disabled=true;btn.textContent='⏳ Analizando...';
-  setProgress('Extrayendo requisitos y consultando Sophos Docs...');
+  var apiKey=document.getElementById("api-key").value.trim();
+  if(!apiKey){showErr("Ingresa tu API Key de Anthropic.");return;}
+  if(!filePayload){showErr("Adjunta un documento primero.");return;}
+  hideErr();
+  var btn=document.getElementById("analyze-btn");
+  btn.disabled=true;btn.textContent="Analizando...";
+  setProg("Extrayendo requisitos y consultando Sophos Docs...");
   rows=[];savedIds={};
-
-  var nombre=document.getElementById('proy-nombre').value.trim();
-  var cliente=document.getElementById('proy-cliente').value.trim();
-  var tipo=document.getElementById('proy-tipo').value;
-
-  var proyPromise=nombre?sbPost('rfp_proyectos',{nombre:nombre,cliente:cliente||null,tipo:tipo}):Promise.resolve(null);
-
-  proyPromise.then(function(res){
+  var nombre=document.getElementById("proy-nombre").value.trim();
+  var cliente=document.getElementById("proy-cliente").value.trim();
+  var tipo=document.getElementById("proy-tipo").value;
+  var pp=nombre?sbPost("rfp_proyectos",{nombre:nombre,cliente:cliente||null,tipo:tipo}):Promise.resolve(null);
+  pp.then(function(res){
     if(res)proyId=Array.isArray(res)?res[0].id:res.id;
     return callClaude(filePayload,apiKey);
   }).then(function(data){
     rows=extractJson(data);
     renderRows();
-    document.getElementById('results-section').className='card';
-    toast('✅ '+rows.length+' requisitos extraidos');
+    document.getElementById("results-section").className="card";
+    toast("Listo: "+rows.length+" requisitos extraidos");
   }).catch(function(e){
-    showError(e.message||'Error al analizar');
-  }).finally(function(){
-    btn.disabled=false;btn.textContent='🔍 Extraer y Analizar Requisitos';
-    setProgress('');
+    showErr(e.message||"Error al analizar");
+  }).then(function(){
+    btn.disabled=false;
+    btn.innerHTML="&#128269; Extraer y Analizar Requisitos";
+    setProg("");
   });
 }
-
 function callClaude(payload,apiKey){
-  var msgContent;
-  if(payload.type==='pdf'){
-    msgContent=[{type:'document',source:{type:'base64',media_type:'application/pdf',data:payload.data}},{type:'text',text:'Extrae TODOS los requisitos tecnicos de este documento de licitacion/RFP.'}];
+  var mc;
+  if(payload.type==="pdf"){
+    mc=[{type:"document",source:{type:"base64",media_type:"application/pdf",data:payload.data}},{type:"text",text:"Extrae TODOS los requisitos tecnicos de este documento de licitacion o RFP."}];
   } else {
-    msgContent=[{type:'text',text:'Extrae TODOS los requisitos tecnicos:
-
-'+payload.data}];
+    mc=[{type:"text",text:"Extrae TODOS los requisitos tecnicos:\n\n"+payload.data}];
   }
-  return fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:SYS,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:msgContent}]})
+  return fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:8000,system:SYS,tools:[{type:"web_search_20250305",name:"web_search"}],messages:[{role:"user",content:mc}]})
   }).then(function(r){
-    if(!r.ok)return r.json().then(function(e){throw new Error(e.error&&e.error.message||'Error API');});
+    if(!r.ok)return r.json().then(function(e){throw new Error(e.error&&e.error.message||"Error API");});
     return r.json();
   });
 }
-
 function extractJson(data){
-  var txt=data.content.filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('
-');
-  var m=txt.match(/[[sS]*]/);
-  if(!m)throw new Error('La IA no devolvio JSON valido. Intenta de nuevo.');
+  var txt=data.content.filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("\n");
+  var m=txt.match(/\[[\s\S]*\]/);
+  if(!m)throw new Error("La IA no devolvio JSON valido. Intenta de nuevo.");
   return JSON.parse(m[0]).map(function(r,i){return Object.assign({},r,{_id:i});});
 }
-
 function renderRows(){
-  var cumple=rows.filter(function(r){return r.estado==='Cumple';}).length;
-  var parcial=rows.filter(function(r){return r.estado==='Cumple parcialmente';}).length;
-  var no=rows.filter(function(r){return r.estado==='No cumple';}).length;
-  document.getElementById('stats-bar').innerHTML='<strong>'+rows.length+' requisitos</strong>&nbsp;<span class="badge badge-cumple">'+cumple+' Cumple</span>&nbsp;<span class="badge badge-parcial">'+parcial+' Parcial</span>&nbsp;<span class="badge badge-nocumple">'+no+' No cumple</span>';
-  var c=document.getElementById('rows-container');
-  c.innerHTML='';
-  rows.forEach(function(r,i){c.appendChild(buildRowEl(r,i));});
+  var sb=document.getElementById("stats-bar");
+  var c=rows.filter(function(r){return r.estado==="Cumple";}).length;
+  var p2=rows.filter(function(r){return r.estado==="Cumple parcialmente";}).length;
+  var n=rows.filter(function(r){return r.estado==="No cumple";}).length;
+  sb.innerHTML="<strong>"+rows.length+" requisitos</strong>&nbsp;<span class=\"badge bc\">"+c+" Cumple</span>&nbsp;<span class=\"badge bp\">"+p2+" Parcial</span>&nbsp;<span class=\"badge bn\">"+n+" No cumple</span>";
+  var ct=document.getElementById("rows-container");ct.innerHTML="";
+  rows.forEach(function(r,i){ct.appendChild(buildRow(r,i));});
 }
-
-function buildRowEl(r,i){
-  var div=document.createElement('div');
-  div.id='row-'+r._id;
-  div.className='row-card'+(savedIds[r._id]?' saved':'');
-  var head=document.createElement('div');
-  head.className='row-head';
-  var badges=document.createElement('div');
-  badges.className='row-badges';
-  badges.innerHTML='<span style="font-size:11px;font-weight:700;color:#cbd5e1">#'+(i+1)+'</span><span class="badge badge-prod">'+r.producto+'</span><span class="'+badgeClass(r.estado)+'">'+r.estado+'</span>'+(savedIds[r._id]?'<span class="badge" style="background:#f3e8ff;color:#7c3aed;border-color:#d8b4fe">✓ En banco</span>':'');
-  var acts=document.createElement('div');
-  acts.className='row-actions';
-  var copyBtn=document.createElement('button');
-  copyBtn.className='action-btn';copyBtn.title='Copiar descripcion';copyBtn.textContent='📋';
-  copyBtn.addEventListener('click',function(){copyText(r.descripcion);});
-  acts.appendChild(copyBtn);
+function buildRow(r,i){
+  var div=document.createElement("div");div.id="row-"+r._id;div.className="row-card"+(savedIds[r._id]?" saved":"");
+  var head=document.createElement("div");head.className="row-head";
+  var bgs=document.createElement("div");bgs.className="row-badges";
+  bgs.innerHTML="<span style=\"font-size:11px;font-weight:700;color:#cbd5e1\">#"+(i+1)+"</span><span class=\"badge bprod\">"+r.producto+"</span><span class=\""+bCls(r.estado)+"\">"+r.estado+"</span>"+(savedIds[r._id]?"<span class=\"badge\" style=\"background:#f3e8ff;color:#7c3aed;border-color:#d8b4fe\">&check; Banco</span>":"");
+  var acts=document.createElement("div");acts.className="row-acts";
+  var cb=document.createElement("button");cb.className="abt";cb.title="Copiar";cb.textContent="\uD83D\uDCCB";
+  (function(desc){cb.addEventListener("click",function(){navigator.clipboard&&navigator.clipboard.writeText(desc).then(function(){toast("Copiado");});});})(r.descripcion);
+  acts.appendChild(cb);
   if(!savedIds[r._id]){
-    var saveBtn=document.createElement('button');
-    saveBtn.className='action-btn purple';saveBtn.title='Guardar en banco';saveBtn.textContent='🗄️';
-    saveBtn.addEventListener('click',function(){saveRow(r._id);});
-    acts.appendChild(saveBtn);
+    var sb2=document.createElement("button");sb2.className="abt";sb2.title="Guardar en banco";sb2.textContent="\uD83D\uDDC4";
+    (function(id){sb2.addEventListener("click",function(){saveRow(id);});})(r._id);
+    acts.appendChild(sb2);
   }
-  head.appendChild(badges);head.appendChild(acts);
-  var req=document.createElement('p');req.className='row-req';req.textContent=r.requisito;
-  var desc=document.createElement('p');desc.className='row-desc';desc.textContent=r.descripcion;
+  head.appendChild(bgs);head.appendChild(acts);
+  var req=document.createElement("p");req.style="font-weight:600;margin-bottom:4px;line-height:1.4";req.textContent=r.requisito||"";
+  var desc=document.createElement("p");desc.style="color:#475569;line-height:1.6;font-size:13px";desc.textContent=r.descripcion||"";
   div.appendChild(head);div.appendChild(req);div.appendChild(desc);
-  if(r.url){var link=document.createElement('a');link.className='row-url';link.href=r.url;link.target='_blank';link.textContent='📎 '+r.url;div.appendChild(link);}
+  if(r.url){var lnk=document.createElement("a");lnk.href=r.url;lnk.target="_blank";lnk.style="font-size:11px;color:#2563eb;display:block;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis";lnk.textContent="\uD83D\uDCCE "+r.url;div.appendChild(lnk);}
   return div;
 }
-
-function copyText(t){navigator.clipboard&&navigator.clipboard.writeText(t).then(function(){toast('📋 Copiado');});}
-
 function saveRow(id){
   var r=rows.find(function(x){return x._id===id;});
   if(!r)return;
-  sbPost('rfp_banco',{proyecto_id:proyId||null,requisito:r.requisito,producto:r.producto,estado:r.estado,respuesta:r.descripcion,referencia:r.url||null,aprobado:true}).then(function(){
+  sbPost("rfp_banco",{proyecto_id:proyId||null,requisito:r.requisito,producto:r.producto,estado:r.estado,respuesta:r.descripcion,referencia:r.url||null,aprobado:true}).then(function(){
     savedIds[id]=true;
-    var el=document.getElementById('row-'+id);
-    var i=rows.findIndex(function(x){return x._id===id;});
-    if(el&&i>=0)el.replaceWith(buildRowEl(r,i));
-    toast('✅ Guardado en banco');
-    updateBancoCount();
+    var el=document.getElementById("row-"+id);
+    var idx=rows.findIndex(function(x){return x._id===id;});
+    if(el&&idx>=0)el.replaceWith(buildRow(r,idx));
+    toast("Guardado en banco");
+    sbGet("rfp_banco?select=id").then(function(d){document.getElementById("banco-count").textContent=Array.isArray(d)?d.length:0;});
   });
 }
-
 function saveAll(){
-  var pending=rows.filter(function(r){return !savedIds[r._id];});
   var chain=Promise.resolve();
-  pending.forEach(function(r){chain=chain.then(function(){return saveRow(r._id);});});
-  chain.then(function(){toast('✅ Todo guardado');});
+  rows.filter(function(r){return !savedIds[r._id];}).forEach(function(r){chain=chain.then(function(){return saveRow(r._id);});});
+  chain.then(function(){toast("Todo guardado en banco");});
 }
-
-function updateBancoCount(){
-  sbGet('rfp_banco?select=id').then(function(d){
-    document.getElementById('banco-count').textContent=Array.isArray(d)?d.length:0;
-  }).catch(function(){});
-}
-
 function exportXlsx(){
-  var nombre=document.getElementById('proy-nombre').value.trim()||'Sophos';
-  var data=rows.map(function(r,i){return{'N':i+1,'Requisito':r.requisito,'Producto Sophos':r.producto,'Estado':r.estado,'Descripcion Tecnica':r.descripcion,'URL Sophos':r.url||''};});
+  var nombre=document.getElementById("proy-nombre").value.trim()||"Sophos";
+  var data=rows.map(function(r,i){return{"N":i+1,"Requisito":r.requisito,"Producto Sophos":r.producto,"Estado":r.estado,"Descripcion Tecnica":r.descripcion,"URL Sophos":r.url||""};});
   var ws=XLSX.utils.json_to_sheet(data);
-  ws['!cols']=[{wch:4},{wch:50},{wch:22},{wch:24},{wch:80},{wch:55}];
-  var wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Respuestas RFP');
-  XLSX.writeFile(wb,'RFP_'+nombre+'.xlsx');
-  toast('📥 Excel descargado');
+  ws["!cols"]=[{wch:4},{wch:50},{wch:22},{wch:24},{wch:80},{wch:55}];
+  var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Respuestas RFP");
+  XLSX.writeFile(wb,"RFP_"+nombre+".xlsx");
+  toast("Excel descargado");
 }
-
 function loadBanco(){
-  document.getElementById('banco-stats').textContent='Cargando...';
-  sbGet('rfp_banco?select=*,rfp_proyectos(nombre,cliente,tipo)&order=created_at.desc&limit=300').then(function(d){
+  document.getElementById("banco-stats").textContent="Cargando...";
+  sbGet("rfp_banco?select=*,rfp_proyectos(nombre,cliente,tipo)&order=created_at.desc&limit=300").then(function(d){
     bancoAll=Array.isArray(d)?d:[];
-    document.getElementById('banco-count').textContent=bancoAll.length;
+    document.getElementById("banco-count").textContent=bancoAll.length;
     filterBanco();
-  }).catch(function(){document.getElementById('banco-stats').textContent='Error al cargar';});
+  }).catch(function(){document.getElementById("banco-stats").textContent="Error al cargar";});
 }
-
 function filterBanco(){
-  var q=document.getElementById('busqueda').value.toLowerCase();
-  var pr=document.getElementById('filtro-prod').value;
-  var es=document.getElementById('filtro-est').value;
+  var q=document.getElementById("busqueda").value.toLowerCase();
+  var pr=document.getElementById("filtro-prod").value;
+  var es=document.getElementById("filtro-est").value;
   var f=bancoAll.filter(function(r){
-    return(!q||(r.requisito||'').toLowerCase().indexOf(q)>=0||(r.respuesta||'').toLowerCase().indexOf(q)>=0)&&(pr==='Todos'||r.producto===pr)&&(es==='Todos'||r.estado===es);
+    return(!q||(r.requisito||"").toLowerCase().indexOf(q)>=0||(r.respuesta||"").toLowerCase().indexOf(q)>=0)&&(pr==="Todos"||r.producto===pr)&&(es==="Todos"||r.estado===es);
   });
-  document.getElementById('banco-stats').textContent=f.length+' de '+bancoAll.length+' respuestas';
+  document.getElementById("banco-stats").textContent=f.length+" de "+bancoAll.length+" respuestas";
   renderBanco(f);
 }
-
 function renderBanco(data){
-  var c=document.getElementById('banco-container');
-  if(!data.length){c.innerHTML='<div class="empty"><div class="empty-icon">🗄️</div><p>Sin resultados</p></div>';return;}
-  c.innerHTML='';
+  var ct=document.getElementById("banco-container");
+  if(!data.length){ct.innerHTML="<div class=\"empty\"><div style=\"font-size:48px;margin-bottom:12px\">&#128452;</div><p>Sin resultados</p></div>";return;}
+  ct.innerHTML="";
   data.forEach(function(r){
-    var div=document.createElement('div');
-    div.className='banco-card'+(r.aprobado?' aprobado':'');
+    var div=document.createElement("div");div.className="bc-card"+(r.aprobado?" ap":"");
     var proy=r.rfp_proyectos;
-    var head=document.createElement('div');
-    head.className='row-head';
-    var badges=document.createElement('div');
-    badges.className='row-badges';
-    badges.innerHTML='<span class="badge badge-prod">'+r.producto+'</span><span class="'+badgeClass(r.estado)+'">'+r.estado+'</span>'+(proy?'<span style="font-size:11px;color:#94a3b8">'+proy.tipo+' · '+proy.nombre+'</span>':'')+(r.aprobado?'<span style="font-size:11px;color:#16a34a;font-weight:600">✓</span>':'');
-    var acts=document.createElement('div');
-    acts.className='row-actions';
-    var cb=document.createElement('button');cb.className='action-btn';cb.title='Copiar';cb.textContent='📋';
-    cb.addEventListener('click',(function(resp){return function(){copyText(resp);};})(r.respuesta));
-    var ab=document.createElement('button');ab.className='action-btn';ab.title=r.aprobado?'Desmarcar':'Aprobar';ab.textContent=r.aprobado?'✓':'○';ab.style.color=r.aprobado?'#16a34a':'#94a3b8';
-    ab.addEventListener('click',(function(id,ap){return function(){sbPatch('rfp_banco?id=eq.'+id,{aprobado:!ap}).then(loadBanco);};})(r.id,r.aprobado));
-    var db=document.createElement('button');db.className='action-btn';db.textContent='🗑️';db.style.color='#fca5a5';
-    db.addEventListener('click',(function(id){return function(){if(confirm('Eliminar?'))sbDel('rfp_banco?id=eq.'+id).then(function(){loadBanco();toast('Eliminado');});};})(r.id));
+    var head=document.createElement("div");head.className="row-head";
+    var bgs=document.createElement("div");bgs.className="row-badges";
+    bgs.innerHTML="<span class=\"badge bprod\">"+r.producto+"</span><span class=\""+bCls(r.estado)+"\">"+r.estado+"</span>"+(proy?"<span style=\"font-size:11px;color:#94a3b8\">"+proy.tipo+" &middot; "+proy.nombre+"</span>":"")+(r.aprobado?"<span style=\"font-size:11px;color:#16a34a;font-weight:600\">&check;</span>":"");
+    var acts=document.createElement("div");acts.className="row-acts";
+    var cb=document.createElement("button");cb.className="abt";cb.textContent="\uD83D\uDCCB";
+    (function(resp){cb.addEventListener("click",function(){navigator.clipboard&&navigator.clipboard.writeText(resp).then(function(){toast("Copiado");});});})(r.respuesta||"");
+    var ab=document.createElement("button");ab.className="abt";ab.textContent=r.aprobado?"\u2713":"\u25CB";ab.style.color=r.aprobado?"#16a34a":"#94a3b8";
+    (function(id,ap){ab.addEventListener("click",function(){sbPatch("rfp_banco?id=eq."+id,{aprobado:!ap}).then(loadBanco);});})(r.id,r.aprobado);
+    var db=document.createElement("button");db.className="abt";db.textContent="\uD83D\uDDD1";db.style.color="#fca5a5";
+    (function(id){db.addEventListener("click",function(){if(confirm("Eliminar esta respuesta?"))sbDel("rfp_banco?id=eq."+id).then(function(){loadBanco();toast("Eliminado");});});})(r.id);
     acts.appendChild(cb);acts.appendChild(ab);acts.appendChild(db);
-    head.appendChild(badges);head.appendChild(acts);
-    var req=document.createElement('p');req.style='font-weight:600;margin-bottom:4px';req.textContent=r.requisito||'';
-    var desc=document.createElement('p');desc.style='color:#475569;line-height:1.6';desc.textContent=r.respuesta||'';
+    head.appendChild(bgs);head.appendChild(acts);
+    var req=document.createElement("p");req.style="font-weight:600;margin-bottom:4px";req.textContent=r.requisito||"";
+    var desc=document.createElement("p");desc.style="color:#475569;line-height:1.6;font-size:13px";desc.textContent=r.respuesta||"";
     div.appendChild(head);div.appendChild(req);div.appendChild(desc);
-    if(r.referencia){var lnk=document.createElement('a');lnk.href=r.referencia;lnk.target='_blank';lnk.style='font-size:11px;color:#2563eb;display:block;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';lnk.textContent='📎 '+r.referencia;div.appendChild(lnk);}
-    var dt=document.createElement('p');dt.style='font-size:11px;color:#cbd5e1;margin-top:8px';dt.textContent=new Date(r.created_at).toLocaleDateString('es-CO');
-    div.appendChild(dt);
-    c.appendChild(div);
+    if(r.referencia){var lnk=document.createElement("a");lnk.href=r.referencia;lnk.target="_blank";lnk.style="font-size:11px;color:#2563eb;display:block;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis";lnk.textContent="\uD83D\uDCCE "+r.referencia;div.appendChild(lnk);}
+    var dt=document.createElement("p");dt.style="font-size:11px;color:#cbd5e1;margin-top:8px";dt.textContent=new Date(r.created_at).toLocaleDateString("es-CO");
+    div.appendChild(dt);ct.appendChild(div);
   });
 }
-
-updateBancoCount();
+sbGet("rfp_banco?select=id").then(function(d){document.getElementById("banco-count").textContent=Array.isArray(d)?d.length:0;}).catch(function(){});
 </script>
 </body>
 </html>
