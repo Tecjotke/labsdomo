@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analizador RFP / Pliegos — Sophos | DOMOTES</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <style>
+    body{font-family:'Inter',system-ui,sans-serif;}
+    .badge-cumple{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;}
+    .badge-parcial{background:#fef9c3;color:#713f12;border:1px solid #fcd34d;}
+    .badge-nocumple{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
+    .badge-evaluacion{background:#dbeafe;color:#1e3a8a;border:1px solid #93c5fd;}
+    .drop-zone{border:2px dashed #cbd5e1;transition:all .2s;}
+    .drop-zone.over{border-color:#3b82f6;background:#eff6ff;}
+    .drop-zone.ready{border-color:#22c55e;background:#f0fdf4;}
+    #toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:50;display:none;}
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50">
+<div id="toast" class="bg-slate-800 text-white text-sm px-4 py-2 rounded-lg shadow-lg"></div>
+<header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="/" class="text-slate-400 hover:text-blue-600 text-sm">← labsdomo</a>
+      <span class="text-slate-300">/</span>
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xs">S</div>
+        <div>
+          <p class="font-bold text-slate-800 text-sm leading-none">Analizador RFP / Pliegos</p>
+          <p class="text-xs text-slate-400">DOMOTES · Sophos + Supabase</p>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-1">
+      <button onclick="setTab('analizar')" id="tab-analizar" class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white">🔍 Analizar</button>
+      <button onclick="setTab('banco')" id="tab-banco" class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100">🗄️ Banco (<span id="banco-count">0</span>)</button>
+    </div>
+  </div>
+</header>
+<div class="max-w-5xl mx-auto p-4 space-y-4">
+  <div id="page-analizar" class="space-y-4">
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+      <p class="text-xs font-semibold text-slate-500 uppercase mb-2">API Key Anthropic</p>
+      <div class="flex gap-2">
+        <input id="api-key" type="password" placeholder="sk-ant-api..." class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono"/>
+        <button onclick="toggleKey()" id="key-btn" class="px-3 py-2 text-xs border border-slate-300 rounded-lg hover:bg-slate-50">Ver</button>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+      <p class="text-xs font-semibold text-slate-500 uppercase mb-3">Datos del Proyecto</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <input id="proy-nombre" placeholder="Nombre del pliego *" class="border border-slate-300 rounded-lg px-3 py-2 text-sm"/>
+        <input id="proy-cliente" placeholder="Cliente" class="border border-slate-300 rounded-lg px-3 py-2 text-sm"/>
+        <select id="proy-tipo" class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          <option>Pliego</option><option>RFP</option><option>Licitación</option><option>Requerimiento</option>
+        </select>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+      <p class="text-xs font-semibold text-slate-500 uppercase mb-3">Documento del Cliente</p>
+      <div id="drop-zone" class="drop-zone rounded-xl p-10 text-center cursor-pointer" onclick="document.getElementById('file-input').click()" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+        <div id="drop-icon" class="text-4xl mb-2">📎</div>
+        <p id="drop-title" class="font-semibold text-slate-600">Arrastra el pliego aquí</p>
+        <p id="drop-sub" class="text-sm text-slate-400 mt-1">o haz clic para seleccionar</p>
+        <p class="text-xs text-slate-300 mt-2">PDF · DOCX · XLSX</p>
+      </div>
+      <input id="file-input" type="file" accept=".pdf,.docx,.xlsx,.xls" class="hidden" onchange="handleFileInput(event)"/>
+      <div id="error-msg" class="hidden mt-3 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2"></div>
+      <button onclick="analyze()" id="analyze-btn" class="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm">🔍 Extraer y Analizar Requisitos</button>
+      <div id="progress" class="hidden mt-2 text-sm text-blue-600 text-center animate-pulse"></div>
+    </div>
+    <div id="results-section" class="hidden bg-white rounded-xl border border-slate-200 p-4">
+      <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+        <div class="flex items-center gap-2 flex-wrap" id="stats-bar"></div>
+        <div class="flex gap-2">
+          <button onclick="saveAll()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium">🗄️ Guardar todos</button>
+          <button onclick="exportXlsx()" class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium">📥 Excel</button>
+        </div>
+      </div>
+      <div id="rows-container" class="space-y-3"></div>
+      <button onclick="exportXlsx()" class="mt-4 w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-sm">📥 Exportar a Excel</button>
+    </div>
+  </div>
+  <div id="page-banco" class="space-y-4 hidden">
+    <div class="bg-white rounded-xl border border-slate-200 p-4">
+      <div class="flex flex-wrap gap-3">
+        <input id="busqueda" oninput="filterBanco()" placeholder="🔍 Buscar en banco..." class="flex-1 min-w-48 border border-slate-300 rounded-lg px-3 py-2 text-sm"/>
+        <select id="filtro-prod" onchange="filterBanco()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          <option>Todos</option><option>Sophos Firewall</option><option>Sophos Endpoint</option><option>Sophos MDR</option><option>Sophos XDR/EDR</option><option>Sophos ZTNA</option><option>Sophos Email</option><option>Sophos Cloud Optix</option><option>Sophos NDR</option><option>Sophos ITDR</option><option>Sophos Central</option><option>Sophos SIEM</option><option>Múltiples productos</option>
+        </select>
+        <select id="filtro-est" onchange="filterBanco()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          <option>Todos</option><option>Cumple</option><option>Cumple parcialmente</option><option>No cumple</option><option>Requiere evaluación</option>
+        </select>
+        <button onclick="loadBanco()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm border border-slate-300">🔄</button>
+      </div>
+      <p id="banco-stats" class="text-xs text-slate-400 mt-2">Cargando...</p>
+    </div>
+    <div id="banco-container" class="space-y-3">
+      <div class="text-center py-16 text-slate-400"><div class="text-5xl mb-3">🗄️</div><p class="font-medium">El banco está vacío</p><p class="text-sm mt-1">Analiza un pliego y guarda las respuestas.</p></div>
+    </div>
+  </div>
+</div>
+<script>
+const SB_URL='https://mplmmyeurhknpobtswmv.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wbG1teWV1cmhrbnBvYnRzd212Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTA3MDMsImV4cCI6MjA5MDYyNjcwM30.kQhAz8Sedc6DhrDsfiKWArtiolLBB0rRLvj7zxj2RkA',SB_H={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+const SOPHOS=['https://docs.sophos.com/nsg/sophos-firewall/22.0/help/en-us/webhelp/onlinehelp/index.html','https://support.sophos.com/support/s/?language=en_US','https://assets.sophos.com/X24WTUEQ/at/9wbpp7hspzjv4zvnf44k3rm/sophos-firewall-bres.pdf','https://docs.sophos.com/central/customer/help/en-us/ManageYourProducts/index.html'];
+const SYS='Eres ingeniero certificado Sophos para DOMOTES/Domotea. Extrae todos los requisitos del documento y responde si Sophos cumple cada uno. Responde SOLO JSON array: [{"requisito":"...","producto":"...","estado":"Cumple|Cumple parcialmente|No cumple|Requiere evaluación","descripcion":"...","url":"URL docs Sophos"}]. Fuentes: '+SOPHOS.join(' ');
+const sbGet=p=>fetch(SB_URL+'/rest/v1/'+p,{headers:SB_H}).then(r=>r.json());
+const sbPost=(p,b)=>fetch(SB_URL+'/rest/v1/'+p,{method:'POST',headers:{...SB_H,'Prefer':'return=representation'},body:JSON.stringify(b)}).then(r=>r.json());
+const sbPatch=(p,b)=>fetch(SB_URL+'/rest/v1/'+p,{method:'PATCH',headers:{...SB_H,'Prefer':'return=representation'},body:JSON.stringify(b)}).then(r=>r.json());
+const sbDel=p=>fetch(SB_URL+'/rest/v1/'+p,{method:'DELETE',headers:SB_H});
+let filePayload=null,rows=[],savedIds=new Set(),proyId=null,bancoAll=[];
+const toast=(m,d=2500)=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',d);};
+const showError=m=>{const e=document.getElementById('error-msg');e.textContent=m;e.classList.remove('hidden');};
+const hideError=()=>document.getElementById('error-msg').classList.add('hidden');
+const setProgress=m=>{const e=document.getElementById('progress');m?(e.textContent=m,e.classList.remove('hidden')):e.classList.add('hidden');};
+const bc=e=>({'Cumple':'badge-cumple','Cumple parcialmente':'badge-parcial','No cumple':'badge-nocumple','Requiere evaluación':'badge-evaluacion'}[e]||'badge-evaluacion');
+function setTab(t){['analizar','banco'].forEach(x=>document.getElementById('page-'+x).classList.toggle('hidden',x!==t));['analizar','banco'].forEach(x=>{document.getElementById('tab-'+x).className='tab-btn px-4 py-1.5 rounded-lg text-sm font-medium '+(x===t?'bg-blue-600 text-white':'text-slate-600 hover:bg-slate-100');});if(t==='banco')loadBanco();}
+function toggleKey(){const i=document.getElementById('api-key'),b=document.getElementById('key-btn');i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'Ver':'Ocultar';}
+function handleDragOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('over');}
+function handleDragLeave(){document.getElementById('drop-zone').classList.remove('over');}
+function handleDrop(e){e.preventDefault();handleDragLeave();processFile(e.dataTransfer.files[0]);}
+function handleFileInput(e){processFile(e.target.files[0]);}
+async function processFile(f){if(!f)return;hideError();filePayload=null;const ext=f.name.split('.').pop().toLowerCase();try{if(ext==='pdf'){const b=await f.arrayBuffer();filePayload={type:'pdf',data:btoa(String.fromCharCode(...new Uint8Array(b)))};}else if(ext==='docx'){const r=await mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()});filePayload={type:'text',data:r.value};}else if(['xlsx','xls'].includes(ext)){const wb=XLSX.read(await f.arrayBuffer());filePayload={type:'text',data:XLSX.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[0]])};}else{showError('Usa PDF, DOCX o XLSX.');return;}const z=document.getElementById('drop-zone');z.className='drop-zone ready rounded-xl p-10 text-center cursor-pointer';document.getElementById('drop-icon').textContent='✅';document.getElementById('drop-title').textContent=f.name;document.getElementById('drop-title').className='font-semibold text-green-700';document.getElementById('drop-sub').textContent='Listo · clic para cambiar';}catch(e){showError('Error: '+e.message);}}
+async function callClaude(p){const k=document.getElementById('api-key').value.trim();const mc=p.type==='pdf'?[{type:'document',source:{type:'base64',media_type:'application/pdf',data:p.data}},{type:'text',text:'Extrae TODOS los requisitos de este documento.'}]:[{type:'text',text:'Extrae TODOS los requisitos:\n\n'+p.data}];const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:SYS,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:mc}]})});if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Error API');}return r.json();}
+function extractJson(d){const t=d.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');const m=t.match(/\[[\s\S]*\]/);if(!m)throw new Error('JSON inválido. Intenta de nuevo.');return JSON.parse(m[0]);}
+async function analyze(){const k=document.getElementById('api-key').value.trim();if(!k)return showError('Ingresa tu API Key.');if(!filePayload)return showError('Adjunta un documento.');hideError();const btn=document.getElementById('analyze-btn');btn.disabled=true;btn.textContent='⏳ Analizando...';setProgress('Procesando...');rows=[];savedIds=new Set();try{const n=document.getElementById('proy-nombre').value.trim(),c=document.getElementById('proy-cliente').value.trim(),t=document.getElementById('proy-tipo').value;if(n){const r=await sbPost('rfp_proyectos',{nombre:n,cliente:c||null,tipo:t});proyId=Array.isArray(r)?r[0]?.id:r?.id;}setProgress('Consultando Sophos Docs...');const d=await callClaude(filePayload);rows=extractJson(d).map((r,i)=>({...r,id:i}));renderRows();document.getElementById('results-section').classList.remove('hidden');toast('✅ '+rows.length+' requisitos');}catch(e){showError(e.message);}finally{btn.disabled=false;btn.textContent='🔍 Extraer y Analizar Requisitos';setProgress('');}}
+function esc(s){return(s||'').replace(/'/g,"\\'").replace(/\n/g,' ');}
+function rowHTML(r,i){const sv=savedIds.has(r.id);return '<div id="row-'+r.id+'" class="border '+(sv?'border-purple-300 bg-purple-50':'border-slate-200 hover:border-blue-200')+' rounded-xl p-4"><div class="flex justify-between items-start mb-2"><div class="flex items-center gap-2 flex-wrap"><span class="text-xs font-bold text-slate-300">#'+(i+1)+'</span><span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">'+r.producto+'</span><span class="text-xs px-2 py-0.5 rounded-full '+bc(r.estado)+'">'+r.estado+'</span>'+(sv?'<span class="text-xs text-purple-500">✓ En banco</span>':'')+'</div><div class="flex gap-1 ml-2"><button onclick="copyText(\'' +esc(r.descripcion)+ '\')" class="text-xs text-slate-300 hover:text-blue-600 px-2 py-0.5 rounded">📋</button>'+(!sv?'<button onclick="saveRow('+r.id+')" class="text-xs text-purple-600 px-2 py-0.5 rounded font-medium">🗄️</button>':'')+'</div></div><p class="text-sm font-semibold text-slate-800 mb-1">'+r.requisito+'</p><p class="text-sm text-slate-600">'+r.descripcion+'</p>'+(r.url?'<a href="'+r.url+'" target="_blank" class="text-xs text-blue-500 mt-1 block truncate">📎 '+r.url+'</a>':'')+'</div>';}
+function renderRows(){document.getElementById('stats-bar').innerHTML='<span class="font-semibold text-slate-800">'+rows.length+' requisitos</span><span class="text-xs px-2 py-0.5 rounded-full badge-cumple">'+rows.filter(r=>r.estado==='Cumple').length+' Cumple</span><span class="text-xs px-2 py-0.5 rounded-full badge-parcial">'+rows.filter(r=>r.estado==='Cumple parcialmente').length+' Parcial</span><span class="text-xs px-2 py-0.5 rounded-full badge-nocumple">'+rows.filter(r=>r.estado==='No cumple').length+' No cumple</span>';document.getElementById('rows-container').innerHTML=rows.map((r,i)=>rowHTML(r,i)).join('');}
+function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('📋 Copiado'));}
+async function saveRow(id){const r=rows.find(x=>x.id===id);if(!r)return;await sbPost('rfp_banco',{proyecto_id:proyId||null,requisito:r.requisito,producto:r.producto,estado:r.estado,respuesta:r.descripcion,referencia:r.url||null,aprobado:true});savedIds.add(id);document.getElementById('row-'+id).outerHTML=rowHTML(r,rows.indexOf(r));toast('✅ Guardado');updateBancoCount();}
+async function saveAll(){for(const r of rows)if(!savedIds.has(r.id))await saveRow(r.id);toast('✅ Todo guardado');}
+async function updateBancoCount(){const d=await sbGet('rfp_banco?select=id');document.getElementById('banco-count').textContent=Array.isArray(d)?d.length:0;}
+function exportXlsx(){const n=document.getElementById('proy-nombre').value.trim()||'Sophos';const ws=XLSX.utils.json_to_sheet(rows.map((r,i)=>({'N°':i+1,'Requisito':r.requisito,'Producto Sophos':r.producto,'Estado':r.estado,'Descripción Técnica':r.descripcion,'URL Sophos':r.url})));ws['!cols']=[{wch:4},{wch:48},{wch:22},{wch:24},{wch:80},{wch:55}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'RFP');XLSX.writeFile(wb,'RFP_'+n+'.xlsx');toast('📥 Excel descargado');}
+async function loadBanco(){document.getElementById('banco-stats').textContent='Cargando...';try{bancoAll=await sbGet('rfp_banco?select=*,rfp_proyectos(nombre,cliente,tipo)&order=created_at.desc&limit=300');if(!Array.isArray(bancoAll))bancoAll=[];document.getElementById('banco-count').textContent=bancoAll.length;filterBanco();}catch{document.getElementById('banco-stats').textContent='Error';}}
+function filterBanco(){const q=document.getElementById('busqueda').value.toLowerCase(),pr=document.getElementById('filtro-prod').value,es=document.getElementById('filtro-est').value;const f=bancoAll.filter(r=>(!q||r.requisito?.toLowerCase().includes(q)||r.respuesta?.toLowerCase().includes(q))&&(pr==='Todos'||r.producto===pr)&&(es==='Todos'||r.estado===es));document.getElementById('banco-stats').textContent=f.length+' de '+bancoAll.length;renderBanco(f);}
+function renderBanco(data){const c=document.getElementById('banco-container');if(!data.length){c.innerHTML='<div class="text-center py-16 text-slate-400"><div class="text-5xl mb-3">🗄️</div><p>Sin resultados</p></div>';return;}c.innerHTML=data.map(r=>{const p=r.rfp_proyectos;return'<div class="bg-white border '+(r.aprobado?'border-green-200':'border-slate-200')+' rounded-xl p-4"><div class="flex justify-between items-start mb-2"><div class="flex items-center gap-2 flex-wrap"><span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">'+r.producto+'</span><span class="text-xs px-2 py-0.5 rounded-full '+bc(r.estado)+'">'+r.estado+'</span>'+(p?'<span class="text-xs text-slate-400">'+p.tipo+' · '+p.nombre+'</span>':'')+(r.aprobado?'<span class="text-xs text-green-600">✓</span>':'')+'</div><div class="flex gap-1"><button onclick="copyText(\'' +esc(r.respuesta)+ '\')" class="text-xs text-slate-300 hover:text-blue-600 px-2 py-0.5 rounded">📋</button><button onclick="toggleAprobado(\'' +r.id+ '\',' +r.aprobado+')" class="text-xs px-2 py-0.5 rounded '+(r.aprobado?'text-green-500':'text-slate-300')+'">'+(r.aprobado?'✓':'○')+'</button><button onclick="eliminar(\'' +r.id+ '\')" class="text-xs text-red-300 hover:text-red-500 px-2 py-0.5 rounded">🗑️</button></div></div><p class="text-sm font-semibold text-slate-800 mb-1">'+r.requisito+'</p><p class="text-sm text-slate-600">'+(r.respuesta||'')+'</p>'+(r.referencia?'<a href="'+r.referencia+'" target="_blank" class="text-xs text-blue-500 mt-1 block truncate">📎 '+r.referencia+'</a>':'')+'<p class="text-xs text-slate-300 mt-2">'+new Date(r.created_at).toLocaleDateString('es-CO')+'</p></div>';}).join('');}
+async function toggleAprobado(id,cur){await sbPatch('rfp_banco?id=eq.'+id,{aprobado:!cur});loadBanco();}
+async function eliminar(id){if(!confirm('¿Eliminar?'))return;await sbDel('rfp_banco?id=eq.'+id);loadBanco();toast('🗑️ Eliminado');}
+updateBancoCount();
+</script>
+</body>
+</html>
