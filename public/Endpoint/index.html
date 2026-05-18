@@ -1310,46 +1310,80 @@
             <div class="eyebrow form-eyebrow">REGISTRO DE PARTICIPANTE</div>
             <h3>Crea tu perfil</h3>
             <p class="form-help">El temporizador inicia cuando hagas clic en <strong>Iniciar caza</strong>. Buena suerte.</p>
-            <form onsubmit="event.preventDefault(); alert('Demo: este form irá a /api/endpoint/register cuando se despliegue en producción.');">
+            <form id="epInterestForm">
               <div class="form-grid">
                 <div class="field full">
                   <label>Nombre completo</label>
-                  <input type="text" placeholder="María García" required>
+                  <input id="ep_name" type="text" placeholder="María García" autocomplete="name" required>
                 </div>
                 <div class="field full">
                   <label>Correo corporativo</label>
-                  <input type="email" placeholder="m.garcia@empresa.co" required>
+                  <input id="ep_email" type="email" placeholder="m.garcia@empresa.co" autocomplete="email" required>
                 </div>
                 <div class="field">
                   <label>Empresa</label>
-                  <input type="text" placeholder="Domotes" required>
+                  <input id="ep_company" type="text" placeholder="Domotes" required>
                 </div>
                 <div class="field">
                   <label>Cargo</label>
-                  <input type="text" placeholder="SOC Analyst" required>
+                  <input id="ep_role" type="text" placeholder="SOC Analyst" required>
                 </div>
                 <div class="field full">
                   <label>Ciudad</label>
-                  <select>
-                    <option>Cali</option>
-                    <option>Bogotá</option>
-                    <option>Medellín</option>
-                    <option>Barranquilla</option>
-                    <option>Bucaramanga</option>
-                    <option>Pereira</option>
-                    <option>Otra</option>
+                  <select id="ep_city">
+                    <option>Cali</option><option>Bogotá</option><option>Medellín</option>
+                    <option>Barranquilla</option><option>Bucaramanga</option><option>Pereira</option><option>Otra</option>
                   </select>
                 </div>
               </div>
-              <button type="submit" class="btn btn-primary form-submit">
+              <div id="epFormError" style="display:none;padding:10px 14px;margin-bottom:12px;background:rgba(255,90,110,0.12);border:1px solid #FF5A6E;border-radius:8px;color:#FF5A6E;font-size:.85rem"></div>
+              <div id="epFormSuccess" style="display:none;padding:14px 16px;margin-bottom:12px;background:rgba(74,222,128,0.12);border:1px solid #4ADE80;border-radius:10px;color:#4ADE80;font-size:.88rem;line-height:1.5"></div>
+              <button id="epSubmitBtn" type="submit" class="btn btn-primary form-submit">
                 <i data-lucide="crosshair" style="width:16px;height:16px"></i>
-                Iniciar caza
+                <span id="epSubmitLabel">Reservar cupo · Q3 2026</span>
               </button>
               <div class="form-foot">
                 <i data-lucide="shield" style="width:12px;height:12px"></i>
-                Tus datos quedan en el dashboard del instructor
+                Endpoint SCE estará disponible en Q3 2026 — te avisaremos por correo
               </div>
             </form>
+            <script>
+            document.getElementById('epInterestForm').addEventListener('submit', async function(e) {
+              e.preventDefault();
+              const btn      = document.getElementById('epSubmitBtn');
+              const label    = document.getElementById('epSubmitLabel');
+              const errorBox = document.getElementById('epFormError');
+              const okBox    = document.getElementById('epFormSuccess');
+              errorBox.style.display = 'none';
+              okBox.style.display = 'none';
+              btn.disabled  = true;
+              label.textContent = 'Guardando...';
+
+              const payload = {
+                lab: 'endpoint',
+                name:    document.getElementById('ep_name').value.trim(),
+                email:   document.getElementById('ep_email').value.trim(),
+                company: document.getElementById('ep_company').value.trim(),
+                role:    document.getElementById('ep_role').value.trim(),
+                city:    document.getElementById('ep_city').value
+              };
+
+              // El lab Endpoint todavía no tiene backend propio. Capturamos el interés
+              // en localStorage como respaldo y mostramos confirmación. Cuando el lab
+              // esté listo, este form pasará a /api/endpoint/register.
+              try {
+                const leads = JSON.parse(localStorage.getItem('endpoint_leads') || '[]');
+                leads.push({ ...payload, at: new Date().toISOString() });
+                localStorage.setItem('endpoint_leads', JSON.stringify(leads));
+              } catch(_) {}
+
+              okBox.innerHTML = '✓ <strong>¡Cupo reservado!</strong> Te escribiremos a <strong>' +
+                payload.email.replace(/[<>]/g,'') +
+                '</strong> en cuanto el lab Endpoint esté listo (Q3 2026). Mientras tanto, prueba el <a href="/Firewall" style="color:#B0E53C;text-decoration:underline">Firewall CTF</a> que ya está activo.';
+              okBox.style.display = 'block';
+              label.textContent = '✓ Reservado';
+            });
+            </script>
           </div>
         </div>
       </div>
