@@ -8,7 +8,9 @@ const cors = require('cors');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const cookieParser = require('cookie-parser');
 const { createClient } = require('@supabase/supabase-js');
+const fwRouter = require('./api/firewall/router');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,6 +34,10 @@ const ADMIN_USER = {
 // ══════════════════════════════════════════════════════════════════════════════
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
+
+// Firewall CTF module — todos los endpoints /api/firewall/*
+app.use('/api/firewall', fwRouter);
 
 // Servir archivos estáticos - ajustado para Vercel
 if (process.env.NODE_ENV !== 'production') {

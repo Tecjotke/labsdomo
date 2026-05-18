@@ -1,0 +1,1311 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>labsdomo/Firewall · Caza la bandera · CTF Sophos ATC Cali 2026</title>
+<meta name="description" content="Laboratorio gamificado tipo Capture The Flag para el curso oficial Sophos ATC Firewall. 12 misiones prácticas, 5 niveles + BOSS, leaderboard en vivo.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+
+<style>
+  :root {
+    --bg-0: #0A0E1A;
+    --bg-1: #101626;
+    --bg-2: #152033;
+    --bg-3: #1A2741;
+    --bg-inset: #060912;
+    --border-subtle: #1F2C44;
+    --border-default: #2A3854;
+    --border-strong: #3A4A6E;
+    --fg-1: #E6EBF5;
+    --fg-2: #9AA7BD;
+    --fg-3: #6B7891;
+    --fg-mute: #4A5670;
+    --fg-on-accent: #0A0E1A;
+    --accent: #B0E53C;
+    --accent-soft: #D6F18A;
+    --accent-glow: rgba(176,229,60,0.35);
+    --accent-bg: rgba(176,229,60,0.12);
+    --sophos-blue: #0070AD;
+    --sophos-blue-dark: #003057;
+    --sophos-teal: #00B5B8;
+    --sophos-teal-soft: #4FD4D6;
+    --info-bg: rgba(0,181,184,0.12);
+    --warn: #F5B83D;
+    --warn-bg: rgba(245,184,61,0.14);
+    --danger: #FF5A6E;
+    --danger-bg: rgba(255,90,110,0.12);
+    --stage-1: #00B5B8; --stage-2: #5BA3D0; --stage-3: #B0E53C;
+    --stage-4: #C490F5; --stage-5: #F5B83D; --stage-boss: #FF5A6E;
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 20px; --r-pill: 9999px;
+    --glow-accent: 0 0 0 1px rgba(176,229,60,0.55), 0 0 24px rgba(176,229,60,0.25);
+    --shadow-lg: 0 24px 64px rgba(0,0,0,0.55), 0 0 0 1px rgba(176,229,60,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg-0);
+    color: var(--fg-1);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ─── App canvas: dot grid + halos ─── */
+  .canvas {
+    position: relative;
+    min-height: 100vh;
+    background-color: var(--bg-0);
+    background-image: radial-gradient(circle at 1px 1px, rgba(31,44,68,0.6) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+  .canvas::before {
+    content: ''; position: fixed; top: -200px; right: -200px;
+    width: 900px; height: 900px;
+    background: radial-gradient(circle, rgba(0,112,173,0.14) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+  .canvas::after {
+    content: ''; position: fixed; bottom: -300px; left: -200px;
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(176,229,60,0.06) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+  .layer { position: relative; z-index: 1; }
+
+  /* ─── Topbar ─── */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    height: 64px;
+    background: rgba(10,14,26,0.75);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex; align-items: center; padding: 0 32px; gap: 18px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), #79B025);
+    display: grid; place-items: center;
+    font-family: var(--font-display); font-weight: 700; font-size: 17px;
+    color: var(--bg-0);
+    box-shadow: 0 4px 14px rgba(176,229,60,0.35);
+  }
+  .brand-text { display: flex; flex-direction: column; line-height: 1; }
+  .brand-wm {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 1.02rem; letter-spacing: -0.01em;
+  }
+  .brand-wm .slash { color: var(--accent); }
+  .brand-tag {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    color: var(--fg-3); letter-spacing: 0.14em;
+    text-transform: uppercase; margin-top: 4px;
+  }
+  .nav-spacer { flex: 1; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-link {
+    font-family: var(--font-display); font-size: 0.86rem; font-weight: 500;
+    color: var(--fg-3); padding: 8px 14px; border-radius: var(--r-sm);
+    background: transparent; border: none; cursor: pointer;
+    transition: color 200ms, background 200ms;
+  }
+  .nav-link:hover { color: var(--fg-1); background: var(--bg-2); }
+  .nav-cta {
+    margin-left: 12px;
+    font-family: var(--font-display); font-weight: 600; font-size: 0.84rem;
+    background: var(--accent); color: var(--bg-0);
+    padding: 9px 18px; border-radius: var(--r-md);
+    box-shadow: var(--glow-accent);
+    transition: transform 150ms;
+  }
+  .nav-cta:hover { transform: translateY(-1px); text-decoration: none; }
+
+  /* ─── Container ─── */
+  .cont { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+  .cont-narrow { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+  /* ─── Eyebrow ─── */
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--fg-3); letter-spacing: 0.16em;
+    text-transform: uppercase; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .eyebrow.accent { color: var(--accent); }
+
+  /* ─── Hero ─── */
+  .hero {
+    padding: 80px 0 100px;
+    position: relative;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 64px;
+    align-items: center;
+  }
+  .hero h1 {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(2.6rem, 5.4vw, 4.4rem);
+    line-height: 1.04; letter-spacing: -0.025em;
+    color: var(--fg-1);
+    margin: 18px 0 24px;
+  }
+  .hero h1 .accent-word {
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(176,229,60,0.45);
+    position: relative;
+    display: inline-block;
+  }
+  .hero h1 .accent-word::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -4px;
+    height: 2px; background: var(--accent);
+    transform: scaleX(0); transform-origin: left;
+    animation: underline-grow 1.4s 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes underline-grow { to { transform: scaleX(1); } }
+
+  .hero p.lead {
+    font-size: 1.08rem; color: var(--fg-2); line-height: 1.65;
+    max-width: 520px; margin-bottom: 32px;
+  }
+  .hero p.lead .mono-inline {
+    font-family: var(--font-mono); color: var(--accent);
+    background: var(--accent-bg);
+    padding: 1px 7px; border-radius: 4px; font-size: 0.92em;
+    border: 1px dashed rgba(176,229,60,0.4);
+  }
+
+  .stats-row {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 36px;
+  }
+  .stat-pill {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    padding: 7px 14px; border-radius: var(--r-pill);
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid; letter-spacing: 0.06em; line-height: 1;
+    font-weight: 500;
+  }
+  .stat-pill .num {
+    font-weight: 700; font-size: 0.82rem;
+  }
+  .stat-pill.info { color: var(--sophos-teal-soft); background: var(--info-bg); border-color: rgba(0,181,184,0.4); }
+  .stat-pill.success { color: var(--accent); background: var(--accent-bg); border-color: rgba(176,229,60,0.4); }
+  .stat-pill.warn { color: var(--warn); background: var(--warn-bg); border-color: rgba(245,184,61,0.4); }
+  .stat-pill.boss { color: #D4A8FF; background: rgba(196,144,245,0.12); border-color: rgba(196,144,245,0.4); }
+
+  .hero-ctas { display: flex; gap: 14px; align-items: center; }
+  .btn {
+    font-family: var(--font-display); font-weight: 600;
+    border-radius: var(--r-md); padding: 14px 24px; cursor: pointer;
+    border: 1px solid transparent;
+    display: inline-flex; align-items: center; gap: 10px;
+    transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none; font-size: 0.95rem;
+  }
+  .btn-primary {
+    background: var(--accent); color: var(--bg-0);
+    box-shadow: var(--glow-accent);
+  }
+  .btn-primary:hover { background: var(--accent-soft); transform: translateY(-1px); text-decoration: none; }
+  .btn-ghost {
+    background: transparent; color: var(--fg-1);
+    border-color: var(--border-default);
+  }
+  .btn-ghost:hover { background: var(--bg-2); border-color: var(--border-strong); text-decoration: none; }
+
+  .presented-by {
+    display: flex; align-items: center; gap: 14px;
+    margin-top: 56px; color: var(--fg-3);
+  }
+  .presented-by .pb-logo {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), #79B025);
+    display: grid; place-items: center;
+    font-family: var(--font-display); font-weight: 700; font-size: 14px;
+    color: var(--bg-0);
+  }
+  .presented-by .pb-text { line-height: 1.3; }
+  .presented-by .pb-name {
+    font-family: var(--font-display); font-weight: 600;
+    color: var(--fg-1); margin-top: 2px;
+  }
+
+  /* ─── Hero right: animated flag scene ─── */
+  .hero-scene {
+    position: relative; height: 480px;
+    border-radius: var(--r-xl);
+    background: linear-gradient(135deg, rgba(0,48,87,0.4), rgba(10,14,26,0.6));
+    border: 1px solid var(--border-subtle);
+    overflow: hidden;
+  }
+  .hero-scene::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(0deg,
+      rgba(176,229,60,0.04) 0px, rgba(176,229,60,0.04) 1px,
+      transparent 1px, transparent 4px);
+    pointer-events: none;
+  }
+  .scene-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(176,229,60,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(176,229,60,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: center;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  }
+  .scene-flag {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 240px; height: 280px;
+    display: grid; place-items: center;
+  }
+  .scene-flag-pole {
+    position: absolute; left: 50%; top: 0;
+    width: 4px; height: 280px;
+    background: linear-gradient(to bottom, var(--border-strong), var(--border-default));
+    border-radius: 2px;
+    transform: translateX(-50%);
+  }
+  .scene-flag-cloth {
+    position: absolute; left: 50%; top: 12px;
+    width: 180px; height: 110px;
+    background: var(--accent);
+    clip-path: polygon(0 0, 100% 0, 80% 50%, 100% 100%, 0 100%);
+    transform-origin: left center;
+    animation: flag-wave 3s ease-in-out infinite;
+    box-shadow: 0 0 60px rgba(176,229,60,0.35);
+  }
+  @keyframes flag-wave {
+    0%, 100% { transform: skewY(-1.5deg) scaleY(0.98); }
+    50% { transform: skewY(1.5deg) scaleY(1.02); }
+  }
+  .scene-flag-token {
+    position: absolute; top: 24px; left: 14px;
+    font-family: var(--font-mono); font-weight: 700;
+    color: var(--bg-0); font-size: 0.7rem; letter-spacing: 0.06em;
+  }
+  .scene-rings {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .scene-rings circle {
+    fill: none; stroke: var(--accent);
+    opacity: 0;
+    animation: ring-pulse 3.4s ease-out infinite;
+  }
+  .scene-rings circle:nth-child(2) { animation-delay: 1.13s; }
+  .scene-rings circle:nth-child(3) { animation-delay: 2.27s; }
+  @keyframes ring-pulse {
+    0% { r: 60; opacity: 0.7; stroke-width: 2; }
+    100% { r: 280; opacity: 0; stroke-width: 0.4; }
+  }
+
+  .scene-corners {
+    position: absolute; inset: 16px;
+    pointer-events: none;
+  }
+  .scene-corner {
+    position: absolute; width: 28px; height: 28px;
+    border: 2px solid var(--accent); opacity: 0.7;
+  }
+  .scene-corner.tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+  .scene-corner.tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+  .scene-corner.bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+  .scene-corner.br { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+  .scene-label {
+    position: absolute; bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 0.74rem;
+    color: var(--accent); letter-spacing: 0.18em;
+    text-transform: uppercase;
+    background: rgba(10,14,26,0.65);
+    padding: 6px 14px; border-radius: var(--r-pill);
+    border: 1px solid rgba(176,229,60,0.3);
+  }
+  .scene-status {
+    position: absolute; top: 20px; right: 20px;
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--accent); letter-spacing: 0.14em;
+  }
+  .scene-status .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+    animation: pulse-dot 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  /* ─── Section spacing ─── */
+  section { padding: 80px 0; position: relative; }
+  .section-head {
+    text-align: center; margin-bottom: 56px;
+    max-width: 720px; margin-left: auto; margin-right: auto;
+  }
+  .section-head h2 {
+    font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 700; letter-spacing: -0.02em;
+    margin: 14px 0 12px; line-height: 1.15;
+  }
+  .section-head h2 .accent { color: var(--accent); }
+  .section-head p {
+    color: var(--fg-2); font-size: 1.02rem; line-height: 1.6;
+  }
+
+  /* ─── Terminal showcase ─── */
+  .terminal-showcase {
+    max-width: 900px; margin: 0 auto;
+    background: var(--bg-inset);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+  }
+  .terminal-showcase::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background-image: repeating-linear-gradient(0deg,
+      rgba(176,229,60,0.025) 0px, rgba(176,229,60,0.025) 1px,
+      transparent 1px, transparent 3px);
+  }
+  .term-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px;
+    background: var(--bg-1);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .term-head .dt {
+    width: 11px; height: 11px; border-radius: 50%;
+  }
+  .term-head .dt-r { background: #FF5A6E; }
+  .term-head .dt-y { background: #F5B83D; }
+  .term-head .dt-g { background: var(--accent); }
+  .term-head .title {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--fg-3); margin-left: 12px;
+    letter-spacing: 0.08em;
+  }
+  .term-body {
+    padding: 22px 24px;
+    font-family: var(--font-mono); font-size: 0.86rem;
+    line-height: 1.65; color: #C7D6E0;
+    min-height: 280px;
+    position: relative; z-index: 2;
+  }
+  .term-body .ln { display: block; }
+  .term-body .pr { color: var(--accent); font-weight: 600; }
+  .term-body .cm { color: var(--fg-3); }
+  .term-body .vl { color: var(--sophos-teal-soft); }
+  .term-body .ok { color: var(--accent); font-weight: 600; }
+  .term-body .er { color: #FF8090; font-weight: 600; }
+  .term-body .key { color: var(--warn); }
+  .term-flag {
+    display: inline-block;
+    font-family: var(--font-mono); font-weight: 700;
+    color: var(--accent); background: var(--accent-bg);
+    border: 1px dashed rgba(176,229,60,0.5);
+    border-radius: 4px; padding: 2px 8px; margin: 0 2px;
+  }
+  .cursor {
+    display: inline-block; width: 9px; height: 1.05em;
+    background: var(--accent); vertical-align: text-bottom;
+    animation: blink 1.1s steps(2) infinite;
+    margin-left: 3px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ─── Levels showcase ─── */
+  .levels-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
+  }
+  .level-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-lg);
+    padding: 22px 18px;
+    position: relative;
+    transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+  }
+  .level-card:hover {
+    background: var(--bg-3);
+    border-color: var(--border-default);
+    transform: translateY(-2px);
+  }
+  .level-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--level-color, var(--accent));
+  }
+  .level-card .lvl-icon {
+    width: 44px; height: 44px; border-radius: 11px;
+    background: color-mix(in srgb, var(--level-color, var(--accent)) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--level-color, var(--accent)) 35%, transparent);
+    display: grid; place-items: center;
+    color: var(--level-color, var(--accent));
+    margin-bottom: 16px;
+  }
+  .level-card .lvl-num {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    color: var(--fg-3); letter-spacing: 0.14em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .level-card .lvl-title {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 0.98rem; color: var(--fg-1);
+    line-height: 1.25; margin-bottom: 10px;
+  }
+  .level-card .lvl-meta {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    color: var(--fg-3); letter-spacing: 0.06em;
+  }
+  .level-card .lvl-meta .pts {
+    color: var(--level-color, var(--accent));
+    font-weight: 600;
+  }
+
+  /* ─── How it works ─── */
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+  .how-step {
+    background: var(--bg-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-lg);
+    padding: 32px 28px;
+    position: relative;
+  }
+  .how-step .step-num {
+    position: absolute; top: 24px; right: 24px;
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 3.2rem; color: var(--bg-3);
+    line-height: 1; letter-spacing: -0.04em;
+    user-select: none;
+  }
+  .how-step .step-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--accent-bg);
+    border: 1px solid rgba(176,229,60,0.4);
+    display: grid; place-items: center;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .how-step h3 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 1.15rem; margin: 0 0 10px;
+    color: var(--fg-1); letter-spacing: -0.01em;
+  }
+  .how-step p {
+    color: var(--fg-2); font-size: 0.93rem;
+    line-height: 1.6; margin: 0;
+  }
+
+  /* ─── Features (alternating rows) ─── */
+  .feature-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+    padding: 56px 0;
+  }
+  .feature-row + .feature-row { border-top: 1px solid var(--border-subtle); }
+  .feature-row.reverse .ft-visual { order: -1; }
+  .feature-text h3 {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 1.9rem; letter-spacing: -0.02em;
+    line-height: 1.2; margin: 12px 0 16px;
+  }
+  .feature-text p {
+    color: var(--fg-2); font-size: 1.02rem; line-height: 1.65;
+    margin-bottom: 20px;
+  }
+  .feature-checks { list-style: none; padding: 0; margin: 0; }
+  .feature-checks li {
+    display: flex; align-items: flex-start; gap: 10px;
+    color: var(--fg-2); font-size: 0.96rem;
+    padding: 6px 0;
+  }
+  .feature-checks li svg { color: var(--accent); margin-top: 3px; flex-shrink: 0; }
+  .feature-checks li strong { color: var(--fg-1); font-weight: 600; }
+
+  /* ─── Visual: mission card preview ─── */
+  .ft-visual {
+    background: var(--bg-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+  }
+  .ft-mission {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 18px;
+    background: var(--bg-1); border: 1px solid var(--border-subtle);
+    border-radius: var(--r-md);
+    margin-bottom: 14px;
+  }
+  .ft-mission.active {
+    box-shadow: var(--glow-accent);
+    border-color: rgba(176,229,60,0.4);
+  }
+  .ft-mission .ft-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    background: color-mix(in srgb, var(--m-color) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--m-color) 40%, transparent);
+    display: grid; place-items: center;
+    color: var(--m-color); flex-shrink: 0;
+  }
+  .ft-mission .ft-body { flex: 1; }
+  .ft-mission .ft-meta {
+    font-family: var(--font-mono); font-size: 0.66rem;
+    color: var(--fg-3); letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .ft-mission .ft-title {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 0.95rem; color: var(--fg-1);
+    margin: 4px 0; line-height: 1.25;
+  }
+  .ft-mission .ft-pts {
+    font-family: var(--font-mono); font-size: 0.76rem;
+    color: var(--accent); font-weight: 600;
+  }
+  .ft-mission .ft-status {
+    font-family: var(--font-mono); font-size: 0.66rem;
+    padding: 4px 9px; border-radius: var(--r-pill);
+    border: 1px solid; letter-spacing: 0.08em;
+  }
+  .ft-status.done {
+    color: var(--accent); background: var(--accent-bg);
+    border-color: rgba(176,229,60,0.4);
+  }
+  .ft-status.active {
+    color: var(--sophos-teal-soft); background: var(--info-bg);
+    border-color: rgba(0,181,184,0.4);
+  }
+  .ft-status.locked {
+    color: var(--fg-3); background: var(--bg-2);
+    border-color: var(--border-default);
+  }
+
+  /* ─── Leaderboard preview ─── */
+  .lb-preview { width: 100%; border-collapse: collapse; }
+  .lb-preview th, .lb-preview td {
+    padding: 12px 14px; text-align: left;
+    border-bottom: 1px solid var(--border-subtle);
+    font-family: var(--font-body); font-size: 0.88rem;
+  }
+  .lb-preview th {
+    font-family: var(--font-mono); font-size: 0.68rem;
+    color: var(--fg-3); letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 500;
+    border-bottom: 1px solid var(--border-default);
+  }
+  .lb-preview .rank {
+    font-family: var(--font-mono); font-weight: 700;
+    color: var(--accent); font-size: 0.95rem;
+  }
+  .lb-preview .pts {
+    font-family: var(--font-mono); font-weight: 600;
+    color: var(--fg-1);
+  }
+  .lb-preview tr.me {
+    background: rgba(176,229,60,0.06);
+  }
+  .lb-preview tr.me .rank { color: var(--accent-soft); }
+  .lb-preview tr.me td:first-child::before {
+    content: '▸'; color: var(--accent);
+    margin-right: 6px;
+  }
+
+  /* ─── Register section ─── */
+  .register-section {
+    padding: 100px 0;
+    background:
+      radial-gradient(circle at top center, rgba(0,112,173,0.08), transparent 50%),
+      radial-gradient(circle at bottom right, rgba(176,229,60,0.05), transparent 50%);
+  }
+  .register-card {
+    max-width: 980px; margin: 0 auto;
+    background: var(--bg-2);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-xl);
+    padding: 48px;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 56px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+  }
+  .register-card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 5px; height: 100%;
+    background: linear-gradient(to bottom, var(--accent), var(--sophos-teal), var(--sophos-blue));
+  }
+  .reg-pitch h2 {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 1.7rem; letter-spacing: -0.02em;
+    line-height: 1.2; margin: 14px 0 16px;
+  }
+  .reg-pitch h2 .accent { color: var(--accent); }
+  .reg-pitch p {
+    color: var(--fg-2); font-size: 0.96rem; line-height: 1.65;
+    margin-bottom: 24px;
+  }
+  .reg-pitch ul {
+    list-style: none; padding: 0; margin: 24px 0 0;
+  }
+  .reg-pitch li {
+    display: flex; gap: 12px; padding: 8px 0;
+    color: var(--fg-2); font-size: 0.9rem;
+  }
+  .reg-pitch li svg { color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+
+  .reg-form .form-eyebrow {
+    margin-bottom: 8px;
+  }
+  .reg-form h3 {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 1.4rem; margin: 0 0 6px;
+  }
+  .reg-form .form-help {
+    color: var(--fg-3); font-size: 0.86rem; margin-bottom: 22px;
+  }
+  .reg-form .form-help strong { color: var(--fg-1); }
+
+  .form-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.full { grid-column: 1 / -1; }
+  .field label {
+    font-family: var(--font-mono); font-size: 0.66rem;
+    color: var(--fg-3); letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .field input, .field select {
+    background: var(--bg-inset);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    padding: 12px 14px;
+    color: var(--fg-1);
+    font-family: var(--font-body); font-size: 0.92rem;
+    outline: none;
+    transition: border-color 200ms, box-shadow 200ms;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(176,229,60,0.15);
+  }
+  .form-submit {
+    width: 100%; margin-top: 18px;
+    justify-content: center; padding: 15px 24px;
+    font-size: 0.98rem;
+  }
+  .form-foot {
+    font-family: var(--font-mono); font-size: 0.66rem;
+    color: var(--fg-mute); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-top: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ─── Footer ─── */
+  footer {
+    border-top: 1px solid var(--border-subtle);
+    padding: 48px 0 32px;
+    color: var(--fg-3);
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 36px;
+  }
+  .footer-brand { max-width: 380px; }
+  .footer-brand p {
+    color: var(--fg-3); font-size: 0.88rem;
+    line-height: 1.65; margin: 14px 0 0;
+  }
+  .footer-col h4 {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    color: var(--fg-3); letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 500;
+    margin: 0 0 14px;
+  }
+  .footer-col a {
+    display: block; color: var(--fg-2);
+    font-size: 0.9rem; padding: 4px 0;
+    text-decoration: none;
+  }
+  .footer-col a:hover { color: var(--fg-1); }
+  .footer-bottom {
+    display: flex; justify-content: space-between;
+    align-items: center; padding-top: 24px;
+    border-top: 1px solid var(--border-subtle);
+    font-family: var(--font-mono); font-size: 0.74rem;
+    color: var(--fg-mute); letter-spacing: 0.06em;
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 1024px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+    .hero-scene { height: 380px; }
+    .levels-grid { grid-template-columns: repeat(3, 1fr); }
+    .how-grid { grid-template-columns: 1fr; }
+    .feature-row { grid-template-columns: 1fr; gap: 32px; }
+    .feature-row.reverse .ft-visual { order: 0; }
+    .register-card { grid-template-columns: 1fr; gap: 36px; padding: 32px; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .topbar { padding: 0 18px; }
+    .nav-links { display: none; }
+    .cont, .cont-narrow { padding: 0 18px; }
+    .hero { padding: 48px 0 60px; }
+    section { padding: 60px 0; }
+    .levels-grid { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+    .footer-bottom { flex-direction: column; gap: 12px; align-items: flex-start; }
+  }
+
+  /* ─── Reduced motion ─── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="layer">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <a href="#" class="brand" style="text-decoration:none;color:inherit;">
+        <div class="brand-mark">dp</div>
+        <div class="brand-text">
+          <div class="brand-wm">labsdomo<span class="slash">/</span>Firewall</div>
+          <div class="brand-tag">CTF · Sophos ATC · Cali</div>
+        </div>
+      </a>
+      <div class="nav-spacer"></div>
+      <nav class="nav-links">
+        <a class="nav-link" href="#niveles">Niveles</a>
+        <a class="nav-link" href="#como-funciona">Cómo funciona</a>
+        <a class="nav-link" href="#curso">Curso ATC</a>
+        <a class="nav-link" href="/Endpoint">Endpoint</a>
+      </nav>
+      <a href="#registro" class="nav-cta">Empezar</a>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="cont">
+        <div class="hero-grid">
+          <div>
+            <div class="eyebrow accent">
+              <i data-lucide="flag" style="width:14px;height:14px"></i>
+              ATC FIREWALL · CALI · JUNIO 2026
+            </div>
+            <h1>
+              Caza la <span class="accent-word">bandera</span>.
+              <br>Domina el firewall.
+            </h1>
+            <p class="lead">
+              12 misiones prácticas sobre Sophos Firewall. Cada reto que resuelvas te entrega una
+              <span class="mono-inline">flag{ ... }</span>
+              que desbloquea el siguiente nivel. Tiempo, puntos y leaderboard en vivo, alineado al curso oficial CT80 22.0v1.
+            </p>
+            <div class="stats-row">
+              <div class="stat-pill info">
+                <i data-lucide="layers" style="width:13px;height:13px"></i>
+                <span class="num">5 NIVELES</span> + BOSS
+              </div>
+              <div class="stat-pill success">
+                <i data-lucide="target" style="width:13px;height:13px"></i>
+                <span class="num">12</span> RETOS
+              </div>
+              <div class="stat-pill warn">
+                <i data-lucide="timer" style="width:13px;height:13px"></i>
+                ~<span class="num">4</span> HORAS
+              </div>
+              <div class="stat-pill boss">
+                <i data-lucide="crown" style="width:13px;height:13px"></i>
+                <span class="num">3,000</span> PTS
+              </div>
+            </div>
+            <div class="hero-ctas">
+              <a href="#registro" class="btn btn-primary">
+                <i data-lucide="play" style="width:16px;height:16px"></i>
+                Empezar el lab
+              </a>
+              <a href="#como-funciona" class="btn btn-ghost">
+                <i data-lucide="book-open" style="width:16px;height:16px"></i>
+                Cómo funciona
+              </a>
+            </div>
+            <div class="presented-by">
+              <div class="pb-logo">dp</div>
+              <div class="pb-text">
+                <div class="eyebrow">Presentado por</div>
+                <div class="pb-name">Domotes · Mayorista de tecnología</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero animated scene -->
+          <div class="hero-scene">
+            <div class="scene-grid"></div>
+            <svg class="scene-rings" width="600" height="600" viewBox="-300 -300 600 600">
+              <circle cx="0" cy="0" r="60"/>
+              <circle cx="0" cy="0" r="60"/>
+              <circle cx="0" cy="0" r="60"/>
+            </svg>
+            <div class="scene-flag">
+              <div class="scene-flag-pole"></div>
+              <div class="scene-flag-cloth">
+                <span class="scene-flag-token">flag{ }</span>
+              </div>
+            </div>
+            <div class="scene-corners">
+              <div class="scene-corner tl"></div>
+              <div class="scene-corner tr"></div>
+              <div class="scene-corner bl"></div>
+              <div class="scene-corner br"></div>
+            </div>
+            <div class="scene-status">
+              <span class="dot"></span>
+              CAPTURE TARGET
+            </div>
+            <div class="scene-label">12 FLAGS · 1 CHAMPION</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Terminal showcase -->
+    <section id="trailer">
+      <div class="cont-narrow">
+        <div class="section-head">
+          <div class="eyebrow accent">▸ TRAILER · MISIÓN 03 · 00:14:22</div>
+          <h2>Así se siente <span class="accent">capturar una flag</span>.</h2>
+          <p>Tu output, tu evidencia. Las flags se generan desde los logs reales de tu firewall —
+          no hay multiple choice, no hay quiz. Configuras, validas, capturas.</p>
+        </div>
+        <div class="terminal-showcase">
+          <div class="term-head">
+            <div class="dt dt-r"></div>
+            <div class="dt dt-y"></div>
+            <div class="dt dt-g"></div>
+            <span class="title">~/lab · MISIÓN 03 · REGLAS LAN ↔ WAN</span>
+          </div>
+          <div class="term-body">
+            <span class="ln"><span class="cm"># Validar tráfico permitido desde LAN</span></span>
+            <span class="ln"><span class="pr">admin@CALI-EDGE-01:~$</span> curl -I http://neverssl.com</span>
+            <span class="ln"><span class="vl">HTTP/1.1 200 OK</span></span>
+            <span class="ln"><span class="vl">Date: Tue, 15 May 2026 14:22:08 GMT</span></span>
+            <span class="ln">&nbsp;</span>
+            <span class="ln"><span class="cm"># Validar bloqueo SSH saliente</span></span>
+            <span class="ln"><span class="pr">admin@CALI-EDGE-01:~$</span> ssh -o ConnectTimeout=5 test@example.com</span>
+            <span class="ln"><span class="er">ssh: connect to host example.com port 22: Connection timed out</span></span>
+            <span class="ln">&nbsp;</span>
+            <span class="ln"><span class="cm"># Leer flag del log de tráfico</span></span>
+            <span class="ln"><span class="pr">admin@CALI-EDGE-01:~$</span> system logs query --rule WEB-CORP --last 1</span>
+            <span class="ln"><span class="vl">[OK]</span> <span class="key">rule</span>=<span class="ok">WEB-CORP-ALLOW</span> <span class="key">action</span>=<span class="ok">ACCEPT</span> <span class="key">bytes</span>=1247</span>
+            <span class="ln"><span class="key">flag</span>=<span class="term-flag">flag{LAN_TRAFFIC_OK}</span></span>
+            <span class="ln">&nbsp;</span>
+            <span class="ln"><span class="ok">🚩 Bandera capturada · +200 pts · Misión 04 desbloqueada</span><span class="cursor"></span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Niveles -->
+    <section id="niveles">
+      <div class="cont">
+        <div class="section-head">
+          <div class="eyebrow">5 NIVELES PROGRESIVOS + 1 JEFE FINAL</div>
+          <h2>De la <span class="accent">implementación</span> al <span class="accent">incidente real</span>.</h2>
+          <p>Cada misión está alineada a un capítulo del curso oficial Sophos CT80 22.0v1. Avanza en orden — no se puede saltar el siguiente nivel sin capturar la flag del anterior.</p>
+        </div>
+        <div class="levels-grid">
+          <div class="level-card" style="--level-color: var(--stage-1)">
+            <div class="lvl-icon"><i data-lucide="shield-check"></i></div>
+            <div class="lvl-num">Nivel 01</div>
+            <div class="lvl-title">Implementación inicial</div>
+            <div class="lvl-meta">2 retos · <span class="pts">300 pts</span></div>
+          </div>
+          <div class="level-card" style="--level-color: var(--stage-2)">
+            <div class="lvl-icon"><i data-lucide="git-branch"></i></div>
+            <div class="lvl-num">Nivel 02</div>
+            <div class="lvl-title">Reglas y NAT</div>
+            <div class="lvl-meta">2 retos · <span class="pts">450 pts</span></div>
+          </div>
+          <div class="level-card" style="--level-color: var(--stage-3)">
+            <div class="lvl-icon"><i data-lucide="lock"></i></div>
+            <div class="lvl-num">Nivel 03</div>
+            <div class="lvl-title">Seguridad: IPS, Web, TLS</div>
+            <div class="lvl-meta">3 retos · <span class="pts">900 pts</span></div>
+          </div>
+          <div class="level-card" style="--level-color: var(--stage-4)">
+            <div class="lvl-icon"><i data-lucide="cable"></i></div>
+            <div class="lvl-num">Nivel 04</div>
+            <div class="lvl-title">VPN Site-to-Site & Remote</div>
+            <div class="lvl-meta">2 retos · <span class="pts">650 pts</span></div>
+          </div>
+          <div class="level-card" style="--level-color: var(--stage-5)">
+            <div class="lvl-icon"><i data-lucide="activity"></i></div>
+            <div class="lvl-num">Nivel 05</div>
+            <div class="lvl-title">HA y troubleshooting</div>
+            <div class="lvl-meta">2 retos · <span class="pts">700 pts</span></div>
+          </div>
+          <div class="level-card" style="--level-color: var(--stage-boss)">
+            <div class="lvl-icon"><i data-lucide="crown"></i></div>
+            <div class="lvl-num">JEFE FINAL</div>
+            <div class="lvl-title">Operación Cali</div>
+            <div class="lvl-meta">1 reto · <span class="pts">1,000 pts</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cómo funciona -->
+    <section id="como-funciona" style="background: rgba(16,22,38,0.5);">
+      <div class="cont">
+        <div class="section-head">
+          <div class="eyebrow">CÓMO FUNCIONA</div>
+          <h2>Tres pasos. <span class="accent">Cuatro horas.</span> Un certificado.</h2>
+        </div>
+        <div class="how-grid">
+          <div class="how-step">
+            <div class="step-num">01</div>
+            <div class="step-icon"><i data-lucide="user-plus"></i></div>
+            <h3>Regístrate</h3>
+            <p>Nombre, correo corporativo, empresa, cargo y ciudad. El temporizador arranca cuando hagas clic en <strong>Iniciar laboratorio</strong>, no antes. Tienes tiempo para llegar a la sala y respirar.</p>
+          </div>
+          <div class="how-step">
+            <div class="step-num">02</div>
+            <div class="step-icon"><i data-lucide="target"></i></div>
+            <h3>Captura flags</h3>
+            <p>Cada reto te pide configurar algo real en tu instancia de Sophos Firewall. Cuando la configuración funciona, el log produce una flag única. La pegas, la validamos, sigues. Penalización suave por intento fallido — la curiosidad no se castiga.</p>
+          </div>
+          <div class="how-step">
+            <div class="step-num">03</div>
+            <div class="step-icon"><i data-lucide="trophy"></i></div>
+            <h3>Sube en el ranking</h3>
+            <p>Leaderboard en vivo durante toda la jornada. Bonificaciones por <strong>first blood</strong>, <strong>cero pistas</strong> y <strong>velocidad</strong>. Al cerrar el BOSS recibes un certificado descargable con QR de verificación.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features alternating -->
+    <section>
+      <div class="cont-narrow">
+        <div class="section-head">
+          <div class="eyebrow">QUÉ VAS A VIVIR DURANTE EL LAB</div>
+          <h2>No es trivia. Es un <span class="accent">SOC en miniatura</span>.</h2>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature-text">
+            <div class="eyebrow accent">EXPERIENCIA DE MISIÓN</div>
+            <h3>Cada reto es un brief técnico, no una pregunta de examen.</h3>
+            <p>Contexto narrativo, objetivo verificable, tareas concretas y un terminal con la salida real. Las pistas son opcionales y tienen costo en puntos — solo úsalas si te trabas de verdad.</p>
+            <ul class="feature-checks">
+              <li><i data-lucide="check-circle-2" style="width:18px;height:18px"></i><span><strong>Logs reales</strong> de tu firewall, no salidas pre-cocinadas.</span></li>
+              <li><i data-lucide="check-circle-2" style="width:18px;height:18px"></i><span><strong>Penalización suave</strong> por intento fallido: −10 a −50 pts según reto.</span></li>
+              <li><i data-lucide="check-circle-2" style="width:18px;height:18px"></i><span><strong>Pistas con costo</strong>: 30 a 200 pts. Tres pistas máximo en el BOSS.</span></li>
+            </ul>
+          </div>
+          <div class="ft-visual">
+            <div class="ft-mission" style="--m-color: var(--stage-1)">
+              <div class="ft-icon"><i data-lucide="shield-check"></i></div>
+              <div class="ft-body">
+                <div class="ft-meta">M01 · NIVEL 01</div>
+                <div class="ft-title">Acceso al firewall & cambio de hostname</div>
+                <div class="ft-pts">+ 150 pts</div>
+              </div>
+              <span class="ft-status done">DONE</span>
+            </div>
+            <div class="ft-mission active" style="--m-color: var(--stage-2)">
+              <div class="ft-icon"><i data-lucide="git-branch"></i></div>
+              <div class="ft-body">
+                <div class="ft-meta">M03 · NIVEL 02 · EN CURSO</div>
+                <div class="ft-title">Reglas de firewall · LAN ↔ WAN</div>
+                <div class="ft-pts">200 pts disponibles</div>
+              </div>
+              <span class="ft-status active">ACTIVA</span>
+            </div>
+            <div class="ft-mission" style="--m-color: var(--stage-3)">
+              <div class="ft-icon"><i data-lucide="lock"></i></div>
+              <div class="ft-body">
+                <div class="ft-meta">M05 · NIVEL 03</div>
+                <div class="ft-title">IPS · bloqueo de exploit conocido</div>
+                <div class="ft-pts">300 pts · bloqueada</div>
+              </div>
+              <span class="ft-status locked">LOCKED</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-row reverse">
+          <div class="feature-text">
+            <div class="eyebrow accent">LEADERBOARD EN VIVO</div>
+            <h3>Mira en tiempo real quién va adelante. Suma bonus, baja tu tiempo.</h3>
+            <p>Todos los registros se sincronizan al instante. El instructor ve el avance de la sala en su dashboard; tú ves tu posición en el ranking de la cohorte. <strong>First Blood</strong> da +25%, <strong>No Hints</strong> +15%, <strong>Speed Bonus</strong> +10%.</p>
+            <ul class="feature-checks">
+              <li><i data-lucide="check-circle-2" style="width:18px;height:18px"></i><span><strong>Realtime</strong> sin polling: cada flag válida actualiza el board en menos de 1s.</span></li>
+              <li><i data-lucide="check-circle-2" style="width:18px;height:18px"></i><span><strong>Anonimización opcional</strong>: si prefieres aparecer como <code>SFW-CALI-0042</code>, lo respetamos.</span></li>
+              <li><i data-lucide="check-circle-2" style="width:18px;height:18px"></i><span><strong>Badges</strong>: 11 logros desbloqueables — PERFECTIONIST, NAT_NINJA, MASTER_OF_FIREWALL.</span></li>
+            </ul>
+          </div>
+          <div class="ft-visual">
+            <table class="lb-preview">
+              <thead>
+                <tr><th>#</th><th>Participante</th><th>Tiempo</th><th>Pts</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="rank">01</td><td>María García · Bogotá</td><td>01:42:11</td><td class="pts">2,850</td></tr>
+                <tr class="me"><td class="rank">02</td><td>Tú · Cali</td><td>01:55:38</td><td class="pts">2,720</td></tr>
+                <tr><td class="rank">03</td><td>Diego Vélez · Cali</td><td>02:08:02</td><td class="pts">2,640</td></tr>
+                <tr><td class="rank">04</td><td>Laura Quintero · Medellín</td><td>02:14:37</td><td class="pts">2,580</td></tr>
+                <tr><td class="rank">05</td><td>Carlos Restrepo · Cali</td><td>02:22:09</td><td class="pts">2,510</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature-text">
+            <div class="eyebrow accent">EL BOSS</div>
+            <h3>Operación Cali — un incidente combinado de 45 minutos.</h3>
+            <p>Endpoint con heartbeat rojo, DNS tunneling activo, login VPN no autorizado desde Europa del Este. Tienes 45 minutos para aislar, contener, recolectar evidencia. La flag final está codificada en Base32 dentro del payload DNS y es <strong>única para tu código de participante</strong> — no se puede compartir.</p>
+            <ul class="feature-checks">
+              <li><i data-lucide="check-circle-2" style="width:18px;height:18px"></i><span>Aislar host vía <strong>Security Heartbeat</strong> o regla manual TOP priority.</span></li>
+              <li><i data-lucide="check-circle-2" style="width:18px;height:18px"></i><span>Bloquear C2 con <strong>Custom Web Category</strong>.</span></li>
+              <li><i data-lucide="check-circle-2" style="width:18px;height:18px"></i><span>Packet capture + Wireshark + Base32 decode para la flag final.</span></li>
+            </ul>
+          </div>
+          <div class="ft-visual" style="background: rgba(255,90,110,0.04); border-color: rgba(255,90,110,0.25);">
+            <div class="ft-mission" style="--m-color: var(--stage-boss); background: rgba(255,90,110,0.06); border-color: rgba(255,90,110,0.35);">
+              <div class="ft-icon"><i data-lucide="crown"></i></div>
+              <div class="ft-body">
+                <div class="ft-meta" style="color: #FF8090;">BOSS · NIVEL 06 · 45 MIN</div>
+                <div class="ft-title">Operación Cali · Incidente activo</div>
+                <div class="ft-pts" style="color: #FF8090;">1,000 pts · única por participante</div>
+              </div>
+              <span class="ft-status" style="color:#FF8090; background:rgba(255,90,110,0.12); border-color:rgba(255,90,110,0.4);">BOSS</span>
+            </div>
+            <div style="margin-top: 14px; padding: 14px 16px; background: var(--bg-inset); border: 1px solid var(--border-subtle); border-radius: var(--r-md); font-family: var(--font-mono); font-size: 0.78rem; color: var(--fg-2); line-height: 1.65;">
+              <span style="color: var(--fg-3);">$</span> dig +short <span style="color: var(--warn);">MFRGGZA...evil-c2.example</span><br>
+              <span style="color: var(--fg-3)">→ 203.0.113.66</span><br>
+              <span style="color: var(--fg-3);">$</span> base32 -d <span style="color: var(--warn);">MFRGGZAA...</span><br>
+              <span style="color: var(--accent);">→ flag{MASTER_A3F9B2C1D8E4}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Curso ATC -->
+    <section id="curso" style="background: linear-gradient(180deg, transparent, rgba(0,48,87,0.12), transparent);">
+      <div class="cont-narrow">
+        <div class="section-head">
+          <div class="eyebrow">ALINEADO AL CURSO OFICIAL</div>
+          <h2>Refuerzo práctico del <span class="accent">CT80 Sophos Firewall Administrator 22.0v1</span>.</h2>
+          <p>El lab no reemplaza al curso oficial — lo amplifica. Cada misión referencia un capítulo del temario CT80. Llegas a tu examen de certificación habiendo configurado de verdad cada concepto, no solo leído sobre él.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 880px; margin: 0 auto;">
+          <div style="padding: 18px 22px; background: var(--bg-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); display: flex; gap: 14px; align-items: center;">
+            <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); width: 50px; flex-shrink: 0;">Cap. 3</span>
+            <span style="color: var(--fg-2); font-size: 0.9rem;">Getting Started · M01-M02</span>
+          </div>
+          <div style="padding: 18px 22px; background: var(--bg-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); display: flex; gap: 14px; align-items: center;">
+            <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); width: 50px; flex-shrink: 0;">Cap. 4</span>
+            <span style="color: var(--fg-2); font-size: 0.9rem;">Base Firewall · M03-M04</span>
+          </div>
+          <div style="padding: 18px 22px; background: var(--bg-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); display: flex; gap: 14px; align-items: center;">
+            <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); width: 50px; flex-shrink: 0;">Cap. 5</span>
+            <span style="color: var(--fg-2); font-size: 0.9rem;">Network Protection (IPS, TLS) · M05, M07</span>
+          </div>
+          <div style="padding: 18px 22px; background: var(--bg-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); display: flex; gap: 14px; align-items: center;">
+            <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); width: 50px; flex-shrink: 0;">Cap. 6</span>
+            <span style="color: var(--fg-2); font-size: 0.9rem;">Site-to-Site Connections · M08</span>
+          </div>
+          <div style="padding: 18px 22px; background: var(--bg-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); display: flex; gap: 14px; align-items: center;">
+            <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); width: 50px; flex-shrink: 0;">Cap. 8</span>
+            <span style="color: var(--fg-2); font-size: 0.9rem;">Web Protection · M06</span>
+          </div>
+          <div style="padding: 18px 22px; background: var(--bg-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); display: flex; gap: 14px; align-items: center;">
+            <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); width: 50px; flex-shrink: 0;">Cap. 9</span>
+            <span style="color: var(--fg-2); font-size: 0.9rem;">Application Control · M06</span>
+          </div>
+          <div style="padding: 18px 22px; background: var(--bg-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); display: flex; gap: 14px; align-items: center;">
+            <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); width: 50px; flex-shrink: 0;">Cap. 10</span>
+            <span style="color: var(--fg-2); font-size: 0.9rem;">Remote Access · M09</span>
+          </div>
+          <div style="padding: 18px 22px; background: var(--bg-2); border: 1px solid var(--border-subtle); border-radius: var(--r-md); display: flex; gap: 14px; align-items: center;">
+            <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); width: 50px; flex-shrink: 0;">Cap. 12</span>
+            <span style="color: var(--fg-2); font-size: 0.9rem;">Logging & Reporting · M10, BOSS</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Registro -->
+    <section id="registro" class="register-section">
+      <div class="cont-narrow">
+        <div class="register-card">
+          <div class="reg-pitch">
+            <div class="eyebrow accent">▸ ÚLTIMOS CUPOS · CALI · JUNIO 2026</div>
+            <h2>Reserva tu puesto. <br><span class="accent">Empieza cuando llegues</span> a la sala.</h2>
+            <p>El registro es gratuito para los inscritos al curso oficial Sophos ATC Firewall en Cali. Si vienes por libre, contáctanos para coordinar acceso. <strong>Cupo máximo 40 participantes</strong>.</p>
+            <ul>
+              <li><i data-lucide="users" style="width:18px;height:18px"></i> 40 cupos por jornada</li>
+              <li><i data-lucide="laptop" style="width:18px;height:18px"></i> Trae tu laptop con VM Sophos Firewall lista</li>
+              <li><i data-lucide="award" style="width:18px;height:18px"></i> Certificado descargable + badges</li>
+              <li><i data-lucide="lock" style="width:18px;height:18px"></i> Tus datos quedan en el dashboard del instructor</li>
+            </ul>
+          </div>
+          <div class="reg-form">
+            <div class="eyebrow form-eyebrow">REGISTRO DE PARTICIPANTE</div>
+            <h3>Crea tu perfil</h3>
+            <p class="form-help">El temporizador inicia cuando hagas clic en <strong>Iniciar laboratorio</strong>. Buena suerte.</p>
+            <form onsubmit="event.preventDefault(); alert('Demo: este form irá a /api/firewall/register cuando se despliegue en producción.');">
+              <div class="form-grid">
+                <div class="field full">
+                  <label>Nombre completo</label>
+                  <input type="text" placeholder="María García" required>
+                </div>
+                <div class="field full">
+                  <label>Correo corporativo</label>
+                  <input type="email" placeholder="m.garcia@empresa.co" required>
+                </div>
+                <div class="field">
+                  <label>Empresa</label>
+                  <input type="text" placeholder="Domotes" required>
+                </div>
+                <div class="field">
+                  <label>Cargo</label>
+                  <input type="text" placeholder="Network Engineer" required>
+                </div>
+                <div class="field full">
+                  <label>Ciudad</label>
+                  <select>
+                    <option>Cali</option>
+                    <option>Bogotá</option>
+                    <option>Medellín</option>
+                    <option>Barranquilla</option>
+                    <option>Bucaramanga</option>
+                    <option>Pereira</option>
+                    <option>Otra</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary form-submit">
+                <i data-lucide="play" style="width:16px;height:16px"></i>
+                Iniciar laboratorio
+              </button>
+              <div class="form-foot">
+                <i data-lucide="shield" style="width:12px;height:12px"></i>
+                Tus datos quedan en el dashboard del instructor
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="cont">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="brand">
+              <div class="brand-mark">dp</div>
+              <div class="brand-text">
+                <div class="brand-wm">labsdomo<span class="slash">/</span>Firewall</div>
+                <div class="brand-tag">CTF · Sophos ATC · Cali</div>
+              </div>
+            </div>
+            <p>Laboratorios prácticos de ciberseguridad para los cursos certificados de Sophos en Latinoamérica. Una iniciativa de <strong style="color: var(--fg-1);">Domotes</strong>, mayorista de tecnología.</p>
+          </div>
+          <div class="footer-col">
+            <h4>Labs</h4>
+            <a href="/Firewall">Firewall CTF</a>
+            <a href="/Endpoint">Endpoint SCE</a>
+            <a href="/MDR">MDR Operator</a>
+            <a href="/XDR">XDR Threat Hunter</a>
+          </div>
+          <div class="footer-col">
+            <h4>Recursos</h4>
+            <a href="#niveles">Niveles</a>
+            <a href="#como-funciona">Cómo funciona</a>
+            <a href="#curso">Curso ATC</a>
+            <a href="#">FAQ</a>
+          </div>
+          <div class="footer-col">
+            <h4>Contacto</h4>
+            <a href="mailto:labs@domotes.com">labs@domotes.com</a>
+            <a href="#">+57 (2) 555-0000</a>
+            <a href="#">Cali · Colombia</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© 2026 Domotes · Mayorista de tecnología. Sophos es marca registrada de Sophos Ltd.</span>
+          <span>Construido con propósito en Cali</span>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+</div>
+
+<script>
+  // Initialize Lucide icons
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
+  // Smooth scroll for in-page anchors
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (el) {
+        e.preventDefault();
+        el.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
