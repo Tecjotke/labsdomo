@@ -1199,27 +1199,27 @@
             <div class="eyebrow form-eyebrow">REGISTRO DE PARTICIPANTE</div>
             <h3>Crea tu perfil</h3>
             <p class="form-help">El temporizador inicia cuando hagas clic en <strong>Iniciar laboratorio</strong>. Buena suerte.</p>
-            <form onsubmit="event.preventDefault(); alert('Demo: este form irá a /api/firewall/register cuando se despliegue en producción.');">
+            <form id="fwRegisterForm">
               <div class="form-grid">
                 <div class="field full">
                   <label>Nombre completo</label>
-                  <input type="text" placeholder="María García" required>
+                  <input id="fw_name" type="text" placeholder="María García" autocomplete="name" required>
                 </div>
                 <div class="field full">
                   <label>Correo corporativo</label>
-                  <input type="email" placeholder="m.garcia@empresa.co" required>
+                  <input id="fw_email" type="email" placeholder="m.garcia@empresa.co" autocomplete="email" required>
                 </div>
                 <div class="field">
                   <label>Empresa</label>
-                  <input type="text" placeholder="Domotes" required>
+                  <input id="fw_company" type="text" placeholder="Domotes" required>
                 </div>
                 <div class="field">
                   <label>Cargo</label>
-                  <input type="text" placeholder="Network Engineer" required>
+                  <input id="fw_role" type="text" placeholder="Network Engineer" required>
                 </div>
                 <div class="field full">
                   <label>Ciudad</label>
-                  <select>
+                  <select id="fw_city">
                     <option>Cali</option>
                     <option>Bogotá</option>
                     <option>Medellín</option>
@@ -1230,15 +1230,71 @@
                   </select>
                 </div>
               </div>
-              <button type="submit" class="btn btn-primary form-submit">
+              <div id="fwFormError" style="display:none;padding:10px 14px;margin-bottom:12px;background:var(--danger-bg);border:1px solid var(--danger);border-radius:8px;color:var(--danger);font-size:.85rem"></div>
+              <button id="fwSubmitBtn" type="submit" class="btn btn-primary form-submit">
                 <i data-lucide="play" style="width:16px;height:16px"></i>
-                Iniciar laboratorio
+                <span id="fwSubmitLabel">Iniciar laboratorio</span>
               </button>
               <div class="form-foot">
                 <i data-lucide="shield" style="width:12px;height:12px"></i>
                 Tus datos quedan en el dashboard del instructor
               </div>
             </form>
+            <script>
+            document.getElementById('fwRegisterForm').addEventListener('submit', async function(e) {
+              e.preventDefault();
+              const btn      = document.getElementById('fwSubmitBtn');
+              const label    = document.getElementById('fwSubmitLabel');
+              const errorBox = document.getElementById('fwFormError');
+              errorBox.style.display = 'none';
+              btn.disabled  = true;
+              label.textContent = 'Registrando...';
+
+              const payload = {
+                name:    document.getElementById('fw_name').value.trim(),
+                email:   document.getElementById('fw_email').value.trim(),
+                company: document.getElementById('fw_company').value.trim(),
+                role:    document.getElementById('fw_role').value.trim(),
+                city:    document.getElementById('fw_city').value
+              };
+
+              try {
+                const regRes = await fetch('/api/firewall/register', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify(payload)
+                });
+                const regData = await regRes.json();
+                if (!regRes.ok || !regData.ok) {
+                  throw new Error(regData.error || 'No se pudo registrar');
+                }
+
+                // Iniciar el lab (timer)
+                label.textContent = 'Iniciando lab...';
+                await fetch('/api/firewall/start', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({ participant_id: regData.participant_id })
+                });
+
+                // Guardar pid en localStorage como respaldo de la cookie
+                try {
+                  localStorage.setItem('fw_pid', regData.participant_id);
+                  localStorage.setItem('fw_code', regData.participant_code);
+                } catch(_) {}
+
+                // Redirigir al board
+                window.location.href = '/Firewall/board.html?code=' + encodeURIComponent(regData.participant_code);
+              } catch (err) {
+                errorBox.textContent = '⚠ ' + (err.message || 'Error de red. Verifica tu conexión e intenta de nuevo.');
+                errorBox.style.display = 'block';
+                btn.disabled = false;
+                label.textContent = 'Iniciar laboratorio';
+              }
+            });
+            </script>
           </div>
         </div>
       </div>
