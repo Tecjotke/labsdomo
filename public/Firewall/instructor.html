@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Instructor · Firewall CTF · labsdomo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
+<style>
+  :root {
+    --bg-0:#0A0E1A; --bg-1:#101626; --bg-2:#152033; --bg-3:#1A2741; --bg-inset:#060912;
+    --border-subtle:#1F2C44; --border-default:#2A3854; --border-strong:#3A4A6E;
+    --fg-1:#E6EBF5; --fg-2:#9AA7BD; --fg-3:#6B7891; --fg-mute:#4A5670;
+    --fg-on-accent:#0A0E1A;
+    --accent:#B0E53C; --accent-soft:#D6F18A; --accent-bg:rgba(176,229,60,0.12);
+    --sophos-teal:#00B5B8; --info-bg:rgba(0,181,184,0.12);
+    --warn:#F5B83D; --warn-bg:rgba(245,184,61,0.14);
+    --danger:#FF5A6E; --danger-bg:rgba(255,90,110,0.12);
+    --success:#4ADE80; --success-bg:rgba(74,222,128,0.12);
+    --font-display:'Space Grotesk',system-ui,sans-serif;
+    --font-body:'Inter',system-ui,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-body);background:var(--bg-0);color:var(--fg-1);min-height:100vh;
+    background-image:radial-gradient(circle at 1px 1px,var(--border-subtle) 1px,transparent 0);
+    background-size:24px 24px;background-attachment:fixed}
+  .container{max-width:1400px;margin:0 auto;padding:0 24px}
+
+  /* LOGIN */
+  .login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
+  .login-card{background:var(--bg-1);border:1px solid var(--border-default);border-radius:14px;padding:30px;max-width:380px;width:100%}
+  .login-card h1{font-family:var(--font-display);font-weight:700;font-size:1.4rem;margin-bottom:6px}
+  .login-card p{color:var(--fg-3);font-size:.88rem;margin-bottom:24px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:.78rem;color:var(--fg-2);margin-bottom:6px;font-weight:500}
+  .field input{width:100%;padding:11px 13px;background:var(--bg-inset);border:1px solid var(--border-default);color:var(--fg-1);border-radius:9px;font-size:.92rem;outline:none}
+  .field input:focus{border-color:var(--accent)}
+  .btn-primary{width:100%;padding:13px;background:var(--accent);color:var(--fg-on-accent);border:none;border-radius:9px;font-weight:700;cursor:pointer;font-family:var(--font-display);font-size:.95rem;display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn-primary:hover:not(:disabled){background:var(--accent-soft)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+  .login-err{padding:9px 12px;background:var(--danger-bg);border:1px solid var(--danger);color:var(--danger);border-radius:8px;font-size:.85rem;margin-bottom:14px;display:none}
+  .login-err.show{display:block}
+
+  /* MAIN */
+  #appShell{display:none}
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(10,14,26,0.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border-subtle);padding:14px 0}
+  .topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand-mark{width:36px;height:36px;border-radius:9px;background:var(--accent);color:var(--fg-on-accent);display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:.9rem}
+  .brand-wm{font-family:var(--font-display);font-weight:700;font-size:1.05rem}
+  .brand-wm .slash{color:var(--accent)}
+  .brand-tag{font-size:.7rem;color:var(--fg-3);margin-top:2px}
+  .stats-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .stat-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:var(--bg-2);border:1px solid var(--border-default);font-size:.82rem;color:var(--fg-2)}
+  .stat-pill strong{color:var(--fg-1);font-family:var(--font-mono)}
+  .stat-pill.pending{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+  .stat-pill.approved{background:var(--success-bg);border-color:var(--success);color:var(--success)}
+  .stat-pill.rejected{background:var(--danger-bg);border-color:var(--danger);color:var(--danger)}
+  .logout-btn{background:transparent;border:1px solid var(--border-default);color:var(--fg-2);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.78rem}
+  .drive-link{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:rgba(66,133,244,0.12);border:1px solid #4285F4;color:#4285F4;font-size:.82rem;font-weight:600;text-decoration:none;transition:filter .15s}
+  .drive-link:hover{filter:brightness(1.2)}
+
+  /* TABS */
+  .tabs{display:flex;gap:6px;padding:24px 0 16px;flex-wrap:wrap;align-items:center}
+  .tab{padding:8px 16px;background:var(--bg-2);border:1px solid var(--border-default);color:var(--fg-2);border-radius:9px;cursor:pointer;font-size:.86rem;display:inline-flex;align-items:center;gap:8px;font-weight:500}
+  .tab.active{background:var(--accent);color:var(--fg-on-accent);border-color:var(--accent);font-weight:600}
+  .tab .count{font-size:.72rem;background:rgba(0,0,0,0.15);padding:1px 7px;border-radius:5px;font-weight:600}
+  .tab.active .count{background:rgba(0,0,0,0.2)}
+  .filter-spacer{flex:1}
+  .refresh-btn{background:var(--bg-2);border:1px solid var(--border-default);color:var(--fg-2);padding:7px 14px;border-radius:9px;cursor:pointer;font-size:.82rem;display:inline-flex;align-items:center;gap:6px}
+
+  /* GRID */
+  .ev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:18px;padding-bottom:60px}
+  .ev-card{background:var(--bg-1);border:1px solid var(--border-default);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  .ev-card.pending_review{border-color:var(--warn);box-shadow:0 0 0 1px rgba(245,184,61,0.15)}
+  .ev-card.approved{border-color:var(--success);opacity:.75}
+  .ev-card.rejected{border-color:var(--danger);opacity:.75}
+
+  .ev-head{padding:14px 16px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .ev-head-left{flex:1;min-width:0}
+  .ev-participant{font-family:var(--font-mono);font-size:.72rem;color:var(--fg-3);margin-bottom:3px}
+  .ev-name{font-weight:600;font-size:.92rem;color:var(--fg-1)}
+  .ev-company{font-size:.74rem;color:var(--fg-3);margin-top:2px}
+  .ev-status-pill{font-size:.66rem;padding:3px 8px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
+  .ev-status-pill.pending_review{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn)}
+  .ev-status-pill.approved{background:var(--success-bg);color:var(--success);border:1px solid var(--success)}
+  .ev-status-pill.rejected{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger)}
+
+  .ev-challenge{padding:10px 16px;border-bottom:1px solid var(--border-subtle);background:var(--bg-2);display:flex;justify-content:space-between;align-items:center;font-size:.82rem}
+  .ev-challenge-title{font-weight:600}
+  .ev-challenge-meta{color:var(--fg-3);font-size:.74rem}
+
+  .ev-thumbs{padding:12px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px}
+  .ev-thumb{aspect-ratio:1;border-radius:7px;overflow:hidden;cursor:pointer;border:1px solid var(--border-default);background:var(--bg-inset)}
+  .ev-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .ev-thumb:hover{border-color:var(--accent)}
+
+  .ev-notes{padding:10px 16px;font-size:.82rem;color:var(--fg-2);line-height:1.5;background:rgba(255,255,255,0.02);border-top:1px solid var(--border-subtle)}
+  .ev-notes-label{font-size:.7rem;color:var(--fg-3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;font-weight:600}
+
+  .ev-actions{padding:14px 16px;border-top:1px solid var(--border-subtle);display:flex;gap:8px;flex-wrap:wrap}
+  .btn{padding:9px 14px;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:.82rem;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-body)}
+  .btn-approve{background:var(--success);color:var(--bg-0);flex:1}
+  .btn-approve:hover{filter:brightness(1.1)}
+  .btn-reject{background:var(--danger);color:white;flex:1}
+  .btn-reject:hover{filter:brightness(1.1)}
+  .btn-revoke{background:var(--bg-2);color:var(--danger);border:1px solid var(--danger);flex:1}
+
+  .ev-feedback-input{display:none;padding:12px 16px;border-top:1px solid var(--border-subtle);background:rgba(255,90,110,0.04)}
+  .ev-feedback-input.show{display:block}
+  .ev-feedback-input textarea{width:100%;padding:9px 11px;background:var(--bg-inset);border:1px solid var(--danger);color:var(--fg-1);border-radius:8px;font-family:var(--font-body);font-size:.85rem;resize:vertical;min-height:60px;outline:none;margin-bottom:8px}
+  .ev-feedback-input .actions{display:flex;gap:8px}
+  .btn-confirm-reject{background:var(--danger);color:white;flex:1}
+  .btn-cancel{background:var(--bg-2);color:var(--fg-1);border:1px solid var(--border-default);flex:1}
+
+  .ev-already-reviewed{padding:10px 16px;background:rgba(255,255,255,0.02);font-size:.78rem;color:var(--fg-3);border-top:1px solid var(--border-subtle)}
+  .ev-already-reviewed strong{color:var(--fg-2)}
+
+  .ev-meta-bottom{padding:8px 16px;font-size:.7rem;color:var(--fg-mute);font-family:var(--font-mono);border-top:1px solid var(--border-subtle);display:flex;justify-content:space-between}
+
+  .empty{text-align:center;padding:80px 20px;color:var(--fg-3)}
+  .empty .icon{font-size:3rem;margin-bottom:12px;display:block}
+
+  /* LIGHTBOX */
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.95);display:none;align-items:center;justify-content:center;z-index:500;padding:20px}
+  .lightbox.show{display:flex}
+  .lightbox img{max-width:92%;max-height:92%;border-radius:8px}
+  .lightbox .close-x{position:absolute;top:20px;right:24px;color:white;font-size:2rem;cursor:pointer;background:transparent;border:none}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--bg-2);border:1px solid var(--border-strong);border-radius:10px;padding:14px 20px;color:var(--fg-1);font-size:.88rem;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.4);transform:translateY(120%);transition:transform .3s;max-width:360px}
+  .toast.show{transform:translateY(0)}
+  .toast.success{border-color:var(--success)} .toast.error{border-color:var(--danger)}
+
+  .loading{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--fg-3);font-size:.9rem}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginScreen">
+  <div class="login-card">
+    <h1>Instructor · Firewall CTF</h1>
+    <p>Acceso restringido al instructor del lab. Usa las mismas credenciales que en <code>/admin</code>.</p>
+    <div class="login-err" id="loginErr"></div>
+    <form id="loginForm">
+      <div class="field">
+        <label>Correo</label>
+        <input type="email" id="loginEmail" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="loginPass" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-primary" id="loginBtn">
+        <i data-lucide="log-in" style="width:16px;height:16px"></i> Iniciar sesión
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appShell">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">dp</div>
+        <div>
+          <div class="brand-wm">labsdomo<span class="slash">/</span>Instructor</div>
+          <div class="brand-tag">Cola de revisión · Firewall CTF</div>
+        </div>
+      </div>
+      <div class="stats-bar">
+        <span class="stat-pill pending"><i data-lucide="clock" style="width:14px;height:14px"></i> <strong id="statPending">0</strong> pendientes</span>
+        <span class="stat-pill approved"><i data-lucide="check-circle" style="width:14px;height:14px"></i> <strong id="statApproved">0</strong> aprobadas</span>
+        <span class="stat-pill rejected"><i data-lucide="x-circle" style="width:14px;height:14px"></i> <strong id="statRejected">0</strong> rechazadas</span>
+        <a href="https://drive.google.com/drive/folders/1ojhJOwg7Dfw0vvj6clK44aYGqj4TDfYK" target="_blank" rel="noopener" class="drive-link" title="Folder en Google Drive con evidencias mirroreadas">
+          <i data-lucide="folder" style="width:14px;height:14px"></i> Drive
+        </a>
+        <button class="logout-btn" onclick="logout()">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="tabs">
+      <button class="tab active" data-status="pending_review" onclick="setFilter('pending_review')">
+        <i data-lucide="clock" style="width:14px;height:14px"></i> Pendientes <span class="count" id="cntPending">0</span>
+      </button>
+      <button class="tab" data-status="approved" onclick="setFilter('approved')">
+        <i data-lucide="check-circle" style="width:14px;height:14px"></i> Aprobadas <span class="count" id="cntApproved">0</span>
+      </button>
+      <button class="tab" data-status="rejected" onclick="setFilter('rejected')">
+        <i data-lucide="x-circle" style="width:14px;height:14px"></i> Rechazadas <span class="count" id="cntRejected">0</span>
+      </button>
+      <button class="tab" data-status="all" onclick="setFilter('all')">
+        <i data-lucide="layers" style="width:14px;height:14px"></i> Todas
+      </button>
+      <div class="filter-spacer"></div>
+      <button class="refresh-btn" onclick="loadQueue()">
+        <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Actualizar
+      </button>
+    </div>
+
+    <div id="evGrid"><div class="loading">Cargando cola...</div></div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="close-x" onclick="closeLightbox()">×</button>
+  <img id="lightboxImg" alt="">
+</div>
+
+<script>
+const STATE = {
+  token: null,
+  email: null,
+  filter: 'pending_review',
+  items: [],
+  pollInterval: null
+};
+
+// LOAD STORED TOKEN
+try {
+  const stored = localStorage.getItem('fw_admin_token');
+  if (stored) {
+    STATE.token = stored;
+    STATE.email = localStorage.getItem('fw_admin_email');
+    showApp();
+  }
+} catch(_) {}
+
+// LOGIN
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginErr');
+  err.classList.remove('show');
+  btn.disabled = true;
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPass').value;
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.token) {
+      err.textContent = data.error || 'Credenciales inválidas';
+      err.classList.add('show');
+      btn.disabled = false;
+      return;
+    }
+    STATE.token = data.token;
+    STATE.email = email;
+    try {
+      localStorage.setItem('fw_admin_token', data.token);
+      localStorage.setItem('fw_admin_email', email);
+    } catch(_) {}
+    showApp();
+  } catch (e) {
+    err.textContent = 'Error de red: ' + e.message;
+    err.classList.add('show');
+    btn.disabled = false;
+  }
+});
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appShell').style.display = 'block';
+  loadQueue();
+  if (STATE.pollInterval) clearInterval(STATE.pollInterval);
+  STATE.pollInterval = setInterval(loadQueue, 8000);
+  lucide.createIcons();
+}
+
+function logout() {
+  STATE.token = null;
+  STATE.email = null;
+  try {
+    localStorage.removeItem('fw_admin_token');
+    localStorage.removeItem('fw_admin_email');
+  } catch(_) {}
+  if (STATE.pollInterval) clearInterval(STATE.pollInterval);
+  document.getElementById('loginScreen').style.display = 'grid';
+  document.getElementById('appShell').style.display = 'none';
+}
+
+function setFilter(status) {
+  STATE.filter = status;
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.status === status);
+  });
+  loadQueue();
+}
+
+async function loadQueue() {
+  try {
+    const res = await fetch('/api/firewall/instructor/evidence/queue?status=' + STATE.filter + '&limit=200', {
+      headers: { 'Authorization': 'Bearer ' + STATE.token }
+    });
+    if (res.status === 401) {
+      showToast('Sesión expirada — vuelve a entrar', 'error');
+      logout();
+      return;
+    }
+    const data = await res.json();
+    if (!data.ok) {
+      showToast('Error: ' + (data.error || 'desconocido'), 'error');
+      return;
+    }
+    STATE.items = data.items || [];
+    const stats = data.stats || { pending_review: 0, approved: 0, rejected: 0 };
+    document.getElementById('statPending').textContent = stats.pending_review || 0;
+    document.getElementById('statApproved').textContent = stats.approved || 0;
+    document.getElementById('statRejected').textContent = stats.rejected || 0;
+    document.getElementById('cntPending').textContent = stats.pending_review || 0;
+    document.getElementById('cntApproved').textContent = stats.approved || 0;
+    document.getElementById('cntRejected').textContent = stats.rejected || 0;
+    renderGrid();
+  } catch (e) {
+    console.error(e);
+    showToast('Error de red al cargar cola', 'error');
+  }
+}
+
+function renderGrid() {
+  const grid = document.getElementById('evGrid');
+  if (STATE.items.length === 0) {
+    const msg = STATE.filter === 'pending_review'
+      ? 'Sin evidencias pendientes — ¡todo al día!'
+      : 'Sin evidencias en este estado todavía.';
+    grid.innerHTML = `<div class="empty"><span class="icon">📭</span><p>${msg}</p></div>`;
+    return;
+  }
+  grid.innerHTML = STATE.items.map(ev => {
+    const shots = Array.isArray(ev.screenshots) ? ev.screenshots : [];
+    const thumbsHtml = shots.map(s => `<div class="ev-thumb" onclick="openLightbox('${escapeAttr(s.url)}')"><img src="${escapeAttr(s.url)}" alt="" loading="lazy"></div>`).join('');
+    const dateStr = new Date(ev.created_at).toLocaleString('es-CO', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' });
+    const reviewedStr = ev.reviewed_at ? new Date(ev.reviewed_at).toLocaleString('es-CO', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' }) : '';
+    const stLabel = { pending_review: 'PENDIENTE', approved: 'APROBADA', rejected: 'RECHAZADA' }[ev.status];
+
+    let actionsHtml;
+    if (ev.status === 'pending_review') {
+      actionsHtml = `<div class="ev-actions">
+        <button class="btn btn-approve" onclick="approve('${ev.id}')"><i data-lucide="check" style="width:14px;height:14px"></i> Aprobar (+${ev.points_awarded} pts)</button>
+        <button class="btn btn-reject" onclick="showRejectForm('${ev.id}')"><i data-lucide="x" style="width:14px;height:14px"></i> Rechazar</button>
+      </div>
+      <div class="ev-feedback-input" id="rejectForm-${ev.id}">
+        <textarea id="rejectFeedback-${ev.id}" placeholder="Razón del rechazo (mín 5 chars) — el participante lo verá y podrá reintentar"></textarea>
+        <div class="actions">
+          <button class="btn btn-cancel" onclick="hideRejectForm('${ev.id}')">Cancelar</button>
+          <button class="btn btn-confirm-reject" onclick="confirmReject('${ev.id}')"><i data-lucide="x-circle" style="width:14px;height:14px"></i> Confirmar rechazo</button>
+        </div>
+      </div>`;
+    } else {
+      const fbHtml = ev.instructor_feedback ? `<br><em>"${escapeHtml(ev.instructor_feedback)}"</em>` : '';
+      actionsHtml = `<div class="ev-already-reviewed">
+        Revisada por <strong>${escapeHtml(ev.reviewed_by || '—')}</strong> el ${reviewedStr}${fbHtml}
+      </div>`;
+    }
+
+    return `<div class="ev-card ${ev.status}">
+      <div class="ev-head">
+        <div class="ev-head-left">
+          <div class="ev-participant">${escapeHtml(ev.participant_code || '—')}</div>
+          <div class="ev-name">${escapeHtml(ev.full_name || '—')}</div>
+          <div class="ev-company">${escapeHtml(ev.company || '—')} · ${escapeHtml(ev.city || '—')}</div>
+        </div>
+        <span class="ev-status-pill ${ev.status}">${stLabel}</span>
+      </div>
+      <div class="ev-challenge">
+        <div>
+          <div class="ev-challenge-title">${escapeHtml(ev.challenge_id)} · ${escapeHtml(ev.challenge_title || '')}</div>
+          <div class="ev-challenge-meta">Nivel ${ev.level} · ${escapeHtml(ev.level_name || '')} · base ${ev.base_points} pts</div>
+        </div>
+      </div>
+      ${shots.length > 0 ? `<div class="ev-thumbs">${thumbsHtml}</div>` : ''}
+      ${ev.notes_from_participant ? `<div class="ev-notes"><div class="ev-notes-label">Nota del participante</div>${escapeHtml(ev.notes_from_participant)}</div>` : ''}
+      ${actionsHtml}
+      <div class="ev-meta-bottom">
+        <span>${shots.length} screenshot${shots.length !== 1 ? 's' : ''}</span>
+        <span>Subida ${dateStr}</span>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+async function approve(id) {
+  if (!confirm('¿Aprobar esta evidencia? El participante ya tiene los puntos asignados; esto solo marca como ✓ verificada.')) return;
+  try {
+    const res = await fetch('/api/firewall/instructor/evidence/' + id + '/approve', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + STATE.token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedback: null })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Error');
+    showToast('Evidencia aprobada ✓', 'success');
+    await loadQueue();
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+}
+
+function showRejectForm(id) {
+  document.getElementById('rejectForm-' + id).classList.add('show');
+  document.getElementById('rejectFeedback-' + id).focus();
+}
+function hideRejectForm(id) {
+  document.getElementById('rejectForm-' + id).classList.remove('show');
+}
+
+async function confirmReject(id) {
+  const fb = document.getElementById('rejectFeedback-' + id).value.trim();
+  if (fb.length < 5) {
+    showToast('Razón mínima de 5 caracteres', 'error');
+    return;
+  }
+  if (!confirm('¿Rechazar y revocar los puntos? El participante podrá reintentar con nueva evidencia.')) return;
+  try {
+    const res = await fetch('/api/firewall/instructor/evidence/' + id + '/reject', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + STATE.token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedback: fb })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Error');
+    showToast('Evidencia rechazada · puntos revocados', 'success');
+    await loadQueue();
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+}
+
+function openLightbox(url) {
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+  document.getElementById('lightboxImg').src = '';
+}
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
+window.approve = approve;
+window.showRejectForm = showRejectForm;
+window.hideRejectForm = hideRejectForm;
+window.confirmReject = confirmReject;
+window.setFilter = setFilter;
+window.logout = logout;
+window.loadQueue = loadQueue;
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type || '');
+  setTimeout(() => { t.className = 'toast ' + (type || ''); }, 3500);
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+lucide.createIcons();
+</script>
+</body>
+</html>

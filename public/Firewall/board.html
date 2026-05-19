@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@0.378.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg-0: #0A0E1A; --bg-1: #101626; --bg-2: #152033; --bg-3: #1A2741;
@@ -34,190 +35,196 @@
     font-family: var(--font-body);
     background: var(--bg-0);
     color: var(--fg-1);
-    background-image:
-      radial-gradient(circle at 1px 1px, var(--border-subtle) 1px, transparent 0);
+    background-image: radial-gradient(circle at 1px 1px, var(--border-subtle) 1px, transparent 0);
     background-size: 24px 24px;
     background-attachment: fixed;
   }
   .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
 
-  /* ── TOP BAR ── */
+  /* TOP BAR */
   .topbar {
     position: sticky; top: 0; z-index: 50;
-    background: rgba(10,14,26,0.92);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border-subtle);
-    padding: 14px 0;
+    background: rgba(10,14,26,0.92); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-subtle); padding: 14px 0;
   }
-  .topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+  .topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
   .brand { display: flex; align-items: center; gap: 12px; }
-  .brand-mark {
-    width: 36px; height: 36px; border-radius: 9px;
-    background: var(--accent); color: var(--fg-on-accent);
-    display: grid; place-items: center;
-    font-family: var(--font-display); font-weight: 700; font-size: .9rem;
-  }
-  .brand-text { line-height: 1.1; }
+  .brand-mark { width: 36px; height: 36px; border-radius: 9px; background: var(--accent); color: var(--fg-on-accent); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: .9rem; }
   .brand-wm { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; color: var(--fg-1); }
   .brand-wm .slash { color: var(--accent); margin: 0 1px; }
   .brand-tag { font-size: .7rem; color: var(--fg-3); margin-top: 2px; }
 
-  .participant-info { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: flex-end; }
-  .pill {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 14px; border-radius: 999px;
-    background: var(--bg-2); border: 1px solid var(--border-default);
-    font-size: .82rem; color: var(--fg-2);
-  }
+  .participant-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--border-default); font-size: .82rem; color: var(--fg-2); }
   .pill strong { color: var(--fg-1); }
   .pill.timer { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-family: var(--font-mono); font-weight: 600; }
   .pill.score { background: var(--info-bg); border-color: var(--sophos-teal); color: var(--sophos-teal); }
   .pill .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--accent); animation: pulse 2s infinite; }
   @keyframes pulse { 50% { opacity: 0.5; } }
 
-  /* ── MAIN GRID ── */
+  /* MAIN */
   .main { display: grid; grid-template-columns: 1fr 320px; gap: 28px; padding: 32px 0; }
   @media (max-width: 1024px) { .main { grid-template-columns: 1fr; } }
 
-  /* ── SECTION TITLES ── */
-  .section-title { font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; margin-bottom: 4px; color: var(--fg-1); }
+  .section-title { font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; margin-bottom: 4px; }
   .section-sub { font-size: .85rem; color: var(--fg-3); margin-bottom: 20px; }
 
-  /* ── LEVELS ── */
   .level-group { margin-bottom: 28px; }
   .level-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-  .level-badge {
-    font-family: var(--font-display); font-weight: 600; font-size: .7rem; letter-spacing: .5px;
-    padding: 4px 10px; border-radius: 6px; background: var(--bg-2); color: var(--fg-2);
-    border: 1px solid var(--border-default); text-transform: uppercase;
-  }
-  .level-title { font-family: var(--font-display); font-weight: 600; font-size: 1rem; color: var(--fg-1); }
+  .level-badge { font-family: var(--font-display); font-weight: 600; font-size: .7rem; letter-spacing: .5px; padding: 4px 10px; border-radius: 6px; background: var(--bg-2); color: var(--fg-2); border: 1px solid var(--border-default); text-transform: uppercase; }
+  .level-title { font-family: var(--font-display); font-weight: 600; font-size: 1rem; }
   .level-progress { margin-left: auto; font-size: .75rem; color: var(--fg-3); font-family: var(--font-mono); }
 
-  /* ── MISSION CARDS ── */
+  /* MISSIONS */
   .missions { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
-  .mission {
-    background: var(--bg-1); border: 1px solid var(--border-subtle);
-    border-radius: 12px; padding: 16px; cursor: pointer;
-    transition: all .15s; position: relative; overflow: hidden;
-  }
-  .mission::before {
-    content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
-    background: var(--stage-color, var(--accent));
-  }
-  .mission:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+  .mission { background: var(--bg-1); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 16px; cursor: pointer; transition: all .15s; position: relative; overflow: hidden; }
+  .mission::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--stage-color, var(--accent)); }
+  .mission:hover:not(.locked) { transform: translateY(-2px); border-color: var(--border-strong); }
   .mission.locked { opacity: 0.45; cursor: not-allowed; }
-  .mission.locked:hover { transform: none; }
   .mission.completed { background: var(--success-bg); border-color: var(--success); }
   .mission.completed::before { background: var(--success); }
+  .mission.pending { background: var(--warn-bg); border-color: var(--warn); }
+  .mission.pending::before { background: var(--warn); }
+  .mission.rejected { background: var(--danger-bg); border-color: var(--danger); }
+  .mission.rejected::before { background: var(--danger); }
   .mission.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-bg); }
   .mission-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .mission-code {
-    font-family: var(--font-mono); font-weight: 600; font-size: .75rem;
-    background: var(--bg-2); padding: 2px 7px; border-radius: 5px; color: var(--fg-2);
-  }
+  .mission-code { font-family: var(--font-mono); font-weight: 600; font-size: .75rem; background: var(--bg-2); padding: 2px 7px; border-radius: 5px; color: var(--fg-2); }
   .mission-icon-wrap { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-2); display: grid; place-items: center; color: var(--stage-color, var(--accent)); }
-  .mission-title { font-family: var(--font-display); font-weight: 600; font-size: .95rem; line-height: 1.3; color: var(--fg-1); margin-bottom: 6px; }
+  .mission-title { font-family: var(--font-display); font-weight: 600; font-size: .95rem; line-height: 1.3; margin-bottom: 6px; }
   .mission-meta { display: flex; gap: 10px; font-size: .72rem; color: var(--fg-3); }
   .mission-pts { color: var(--accent); font-weight: 600; }
-  .mission-status { position: absolute; top: 14px; right: 14px; font-size: .7rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: .3px; }
+  .mission-status { position: absolute; top: 14px; right: 14px; font-size: .68rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: .3px; }
   .mission-status.completed { background: var(--success-bg); color: var(--success); }
+  .mission-status.pending { background: var(--warn-bg); color: var(--warn); }
+  .mission-status.rejected { background: var(--danger-bg); color: var(--danger); }
   .mission-status.active { background: var(--accent-bg); color: var(--accent); }
   .mission-status.locked { background: var(--bg-2); color: var(--fg-mute); }
 
-  /* ── SIDEBAR ── */
+  /* SIDEBAR */
   .sidebar { display: flex; flex-direction: column; gap: 20px; }
   .panel { background: var(--bg-1); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 18px; }
-  .panel h3 { font-family: var(--font-display); font-weight: 600; font-size: .95rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; color: var(--fg-1); }
+  .panel h3 { font-family: var(--font-display); font-weight: 600; font-size: .95rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
   .panel h3 .badge { font-size: .65rem; padding: 2px 7px; background: var(--accent); color: var(--fg-on-accent); border-radius: 5px; }
 
-  /* Score panel */
   .score-big { font-family: var(--font-display); font-size: 2.4rem; font-weight: 700; color: var(--accent); line-height: 1; }
   .score-sub { font-size: .8rem; color: var(--fg-3); margin-top: 4px; }
   .score-row { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px dashed var(--border-subtle); font-size: .8rem; color: var(--fg-2); }
   .score-row:first-of-type { border-top: none; padding-top: 14px; margin-top: 14px; }
   .score-row strong { color: var(--fg-1); font-family: var(--font-mono); }
 
-  /* Leaderboard */
-  .lb-row {
-    display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center;
-    padding: 8px 4px; border-radius: 7px; font-size: .82rem;
-  }
+  .lb-row { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 8px 4px; border-radius: 7px; font-size: .82rem; }
   .lb-row:hover { background: var(--bg-2); }
   .lb-row.me { background: var(--accent-bg); border: 1px solid var(--accent); }
   .lb-rank { font-family: var(--font-mono); font-weight: 700; color: var(--fg-2); text-align: center; }
-  .lb-rank.gold { color: #FFD700; }
-  .lb-rank.silver { color: #C0C0C0; }
-  .lb-rank.bronze { color: #CD7F32; }
+  .lb-rank.gold { color: #FFD700; } .lb-rank.silver { color: #C0C0C0; } .lb-rank.bronze { color: #CD7F32; }
   .lb-name { color: var(--fg-1); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lb-score { font-family: var(--font-mono); color: var(--accent); font-weight: 600; font-size: .78rem; }
 
-  /* ── MODAL ── */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(6,9,18,0.85);
-    display: none; align-items: center; justify-content: center;
-    z-index: 100; padding: 20px; backdrop-filter: blur(6px);
-  }
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(6,9,18,0.85); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; backdrop-filter: blur(6px); }
   .modal-overlay.show { display: flex; }
-  .modal {
-    background: var(--bg-1); border: 1px solid var(--border-strong);
-    border-radius: 16px; max-width: 720px; width: 100%;
-    max-height: 90vh; overflow-y: auto;
-  }
+  .modal { background: var(--bg-1); border: 1px solid var(--border-strong); border-radius: 16px; max-width: 760px; width: 100%; max-height: 92vh; overflow-y: auto; }
   .modal-head { padding: 22px 26px 16px; border-bottom: 1px solid var(--border-subtle); position: relative; }
   .modal-close { position: absolute; top: 18px; right: 18px; background: var(--bg-2); border: 1px solid var(--border-default); color: var(--fg-1); border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: .85rem; }
   .modal-code { font-family: var(--font-mono); font-size: .75rem; color: var(--fg-3); margin-bottom: 6px; }
-  .modal-title { font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; color: var(--fg-1); margin-bottom: 8px; }
-  .modal-meta { display: flex; gap: 14px; font-size: .8rem; color: var(--fg-2); }
+  .modal-title { font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; margin-bottom: 8px; }
+  .modal-meta { display: flex; gap: 14px; font-size: .8rem; color: var(--fg-2); flex-wrap: wrap; }
   .modal-meta span { display: inline-flex; align-items: center; gap: 5px; }
   .modal-body { padding: 22px 26px; }
   .modal-section { margin-bottom: 20px; }
   .modal-section h4 { font-family: var(--font-display); font-weight: 600; font-size: .85rem; text-transform: uppercase; letter-spacing: .4px; color: var(--fg-2); margin-bottom: 10px; }
   .modal-desc { color: var(--fg-2); line-height: 1.6; font-size: .92rem; }
   .task-list { list-style: none; padding: 0; }
-  .task-list li {
-    padding: 9px 0 9px 28px; border-bottom: 1px dashed var(--border-subtle);
-    font-size: .85rem; color: var(--fg-2); line-height: 1.5; position: relative;
-  }
-  .task-list li::before {
-    content: '▸'; position: absolute; left: 6px; color: var(--accent);
-  }
+  .task-list li { padding: 9px 0 9px 28px; border-bottom: 1px dashed var(--border-subtle); font-size: .85rem; color: var(--fg-2); line-height: 1.5; position: relative; }
+  .task-list li::before { content: '▸'; position: absolute; left: 6px; color: var(--accent); }
   .task-list li:last-child { border-bottom: none; }
 
   .hint-box { background: var(--warn-bg); border: 1px solid var(--warn); border-radius: 10px; padding: 14px; }
   .hint-box .hint-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: var(--warn); font-weight: 600; font-size: .85rem; }
   .hint-box .hint-text { font-size: .9rem; color: var(--fg-1); line-height: 1.5; }
   .hint-locked { background: var(--bg-2); border: 1px dashed var(--border-default); border-radius: 10px; padding: 14px; text-align: center; }
-  .hint-locked button { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn); padding: 6px 14px; border-radius: 7px; font-size: .82rem; cursor: pointer; font-weight: 600; }
+  .hint-locked button { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn); padding: 6px 14px; border-radius: 7px; font-size: .82rem; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
 
-  .flag-form { display: flex; gap: 10px; }
-  .flag-form input {
-    flex: 1; padding: 12px 14px;
+  /* UPLOAD DROPZONE */
+  .dropzone {
+    border: 2px dashed var(--border-strong);
+    border-radius: 12px; padding: 28px 18px;
+    text-align: center; cursor: pointer;
+    background: var(--bg-2); transition: all .2s;
+  }
+  .dropzone:hover, .dropzone.dragover { border-color: var(--accent); background: var(--accent-bg); }
+  .dropzone-icon { color: var(--fg-3); margin-bottom: 10px; }
+  .dropzone.dragover .dropzone-icon { color: var(--accent); }
+  .dropzone-title { font-weight: 600; font-size: .95rem; margin-bottom: 4px; color: var(--fg-1); }
+  .dropzone-sub { font-size: .8rem; color: var(--fg-3); }
+  .dropzone input[type=file] { display: none; }
+
+  .upload-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 14px; }
+  .upload-thumb {
+    aspect-ratio: 1; background: var(--bg-inset); border: 1px solid var(--border-default);
+    border-radius: 8px; position: relative; overflow: hidden;
+  }
+  .upload-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .upload-thumb .remove-btn {
+    position: absolute; top: 4px; right: 4px;
+    background: var(--danger); color: white; border: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    cursor: pointer; display: grid; place-items: center; font-size: 12px;
+  }
+  .upload-thumb .upload-progress {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--accent);
+    transform-origin: left; transform: scaleX(0); transition: transform .2s;
+  }
+  .upload-thumb.uploading { opacity: 0.6; }
+  .upload-thumb.error { border-color: var(--danger); }
+  .upload-thumb .err-tag { position: absolute; bottom: 4px; left: 4px; right: 4px; background: var(--danger); color: white; font-size: .65rem; padding: 2px 4px; border-radius: 4px; text-align: center; }
+
+  .notes-area {
+    width: 100%; padding: 10px 12px; margin-top: 12px;
     background: var(--bg-inset); border: 1px solid var(--border-default);
     color: var(--fg-1); border-radius: 9px;
-    font-family: var(--font-mono); font-size: .9rem; outline: none;
+    font-family: var(--font-body); font-size: .88rem;
+    resize: vertical; min-height: 60px; outline: none;
   }
-  .flag-form input:focus { border-color: var(--accent); }
-  .flag-form button {
-    padding: 12px 22px; background: var(--accent); color: var(--fg-on-accent);
-    border: none; border-radius: 9px; font-weight: 700; cursor: pointer;
-    font-family: var(--font-display); font-size: .9rem;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .flag-form button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .flag-feedback { margin-top: 10px; padding: 10px 14px; border-radius: 8px; font-size: .85rem; display: none; }
-  .flag-feedback.success { background: var(--success-bg); border: 1px solid var(--success); color: var(--success); display: block; }
-  .flag-feedback.error { background: var(--danger-bg); border: 1px solid var(--danger); color: var(--danger); display: block; }
-  .flag-format { font-family: var(--font-mono); font-size: .75rem; color: var(--fg-3); margin-top: 6px; }
+  .notes-area:focus { border-color: var(--accent); }
 
-  /* Welcome banner */
-  .welcome-banner {
-    background: linear-gradient(135deg, var(--accent-bg), var(--info-bg));
-    border: 1px solid var(--accent); border-radius: 12px;
-    padding: 18px 22px; margin-bottom: 24px;
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  .submit-evidence-btn {
+    width: 100%; margin-top: 14px;
+    padding: 14px; background: var(--accent); color: var(--fg-on-accent);
+    border: none; border-radius: 10px; font-weight: 700; cursor: pointer;
+    font-family: var(--font-display); font-size: 1rem;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all .15s;
   }
-  .welcome-banner h2 { font-family: var(--font-display); font-size: 1.1rem; color: var(--fg-1); margin-bottom: 4px; }
+  .submit-evidence-btn:hover:not(:disabled) { background: var(--accent-soft); transform: translateY(-1px); }
+  .submit-evidence-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Evidence history */
+  .ev-history { display: flex; flex-direction: column; gap: 10px; }
+  .ev-item {
+    background: var(--bg-2); border: 1px solid var(--border-default);
+    border-radius: 10px; padding: 14px;
+  }
+  .ev-item.pending { border-color: var(--warn); }
+  .ev-item.approved { border-color: var(--success); background: var(--success-bg); }
+  .ev-item.rejected { border-color: var(--danger); }
+  .ev-item-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .ev-item-status { font-size: .7rem; padding: 3px 9px; border-radius: 999px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
+  .ev-item-status.pending { background: var(--warn-bg); color: var(--warn); }
+  .ev-item-status.approved { background: var(--success-bg); color: var(--success); }
+  .ev-item-status.rejected { background: var(--danger-bg); color: var(--danger); }
+  .ev-item-date { font-size: .72rem; color: var(--fg-3); font-family: var(--font-mono); }
+  .ev-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; }
+  .ev-thumb { aspect-ratio: 1; border-radius: 6px; overflow: hidden; cursor: pointer; }
+  .ev-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .ev-feedback { margin-top: 10px; padding: 10px; background: rgba(255,255,255,.04); border-radius: 7px; font-size: .82rem; color: var(--fg-2); line-height: 1.4; border-left: 3px solid var(--border-strong); }
+  .ev-feedback.rejected { border-left-color: var(--danger); color: var(--danger); }
+  .ev-feedback.approved { border-left-color: var(--success); color: var(--success); }
+
+  /* WELCOME */
+  .welcome-banner { background: linear-gradient(135deg, var(--accent-bg), var(--info-bg)); border: 1px solid var(--accent); border-radius: 12px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .welcome-banner h2 { font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 4px; }
   .welcome-banner p { font-size: .85rem; color: var(--fg-2); }
   .welcome-banner .accent-text { color: var(--accent); font-weight: 700; font-family: var(--font-mono); }
 
@@ -225,17 +232,16 @@
   .loading { display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--fg-3); font-size: .9rem; }
 
   /* Toast */
-  .toast {
-    position: fixed; bottom: 24px; right: 24px;
-    background: var(--bg-2); border: 1px solid var(--border-strong);
-    border-radius: 10px; padding: 14px 20px; color: var(--fg-1);
-    font-size: .88rem; z-index: 200;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    transform: translateY(120%); transition: transform .3s ease;
-  }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg-2); border: 1px solid var(--border-strong); border-radius: 10px; padding: 14px 20px; color: var(--fg-1); font-size: .88rem; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,0.4); transform: translateY(120%); transition: transform .3s ease; max-width: 360px; }
   .toast.show { transform: translateY(0); }
   .toast.success { border-color: var(--success); }
   .toast.error { border-color: var(--danger); }
+
+  /* Lightbox */
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.94); display: none; align-items: center; justify-content: center; z-index: 500; padding: 20px; }
+  .lightbox.show { display: flex; }
+  .lightbox img { max-width: 92%; max-height: 92%; border-radius: 8px; }
+  .lightbox .close-x { position: absolute; top: 20px; right: 24px; color: white; font-size: 2rem; cursor: pointer; background: transparent; border: none; }
 
   @media (max-width: 600px) {
     .topbar-inner { flex-direction: column; align-items: flex-start; }
@@ -247,7 +253,6 @@
 </head>
 <body>
 
-<!-- TOP BAR -->
 <header class="topbar">
   <div class="container topbar-inner">
     <div class="brand">
@@ -267,60 +272,56 @@
 </header>
 
 <main class="container main">
-
-  <!-- COLUMN: Missions -->
   <section>
     <div class="welcome-banner" id="welcomeBanner">
       <div>
         <h2>Bienvenido al CTF, <span id="welcomeName">Operador</span></h2>
-        <p>Tu código de participante es <span class="accent-text" id="welcomeCode">—</span>. Captura las 12 banderas para alcanzar el rango maestro.</p>
+        <p>Tu código de participante es <span class="accent-text" id="welcomeCode">—</span>. Sube screenshots como evidencia de cada misión. El instructor verificará tu trabajo.</p>
       </div>
       <button onclick="document.getElementById('welcomeBanner').style.display='none'" style="background:transparent;border:1px solid var(--border-default);color:var(--fg-2);padding:6px 10px;border-radius:8px;cursor:pointer;font-size:.78rem">Ocultar</button>
     </div>
 
     <h2 class="section-title">Misiones</h2>
-    <p class="section-sub">Completa cada reto, captura su flag y desbloquea el siguiente nivel.</p>
+    <p class="section-sub">Completa cada reto, sube screenshots como evidencia y desbloquea el siguiente nivel.</p>
 
-    <div id="levelsContainer">
-      <div class="loading">Cargando misiones...</div>
-    </div>
+    <div id="levelsContainer"><div class="loading">Cargando misiones...</div></div>
   </section>
 
-  <!-- COLUMN: Sidebar -->
   <aside class="sidebar">
-    <!-- Score panel -->
     <div class="panel">
       <h3><i data-lucide="award" style="width:18px;height:18px"></i> Tu progreso</h3>
       <div class="score-big" id="sScore">0</div>
       <div class="score-sub">puntos · nivel <span id="sLevel">1</span></div>
       <div class="score-row"><span>Completadas</span> <strong id="sCompleted">0 / 12</strong></div>
-      <div class="score-row"><span>Estado</span> <strong id="sStatus">Activo</strong></div>
+      <div class="score-row"><span>En revisión</span> <strong id="sPending">0</strong></div>
+      <div class="score-row"><span>Aprobadas</span> <strong id="sApproved">0</strong></div>
       <div class="score-row"><span>Pistas usadas</span> <strong id="sHints">0</strong></div>
     </div>
 
-    <!-- Leaderboard -->
     <div class="panel">
       <h3><i data-lucide="trophy" style="width:18px;height:18px"></i> Top 10 <span class="badge">EN VIVO</span></h3>
       <div id="leaderboard"><div class="loading">Cargando...</div></div>
     </div>
 
-    <!-- Help -->
     <div class="panel">
-      <h3><i data-lucide="help-circle" style="width:18px;height:18px"></i> Cómo capturar flags</h3>
+      <h3><i data-lucide="help-circle" style="width:18px;height:18px"></i> Cómo enviar evidencia</h3>
       <div style="font-size:.82rem;color:var(--fg-2);line-height:1.6">
-        Sigue las tareas de cada misión en tu VM Sophos Firewall. La flag aparece como texto con formato <span style="font-family:var(--font-mono);color:var(--accent)">flag{...}</span> en logs, archivos o el audit trail. Cópiala y pégala aquí.
+        1. Completa la tarea en tu VM Sophos Firewall<br>
+        2. Toma screenshots que prueben el resultado<br>
+        3. Arrastra las imágenes al recuadro de la misión<br>
+        4. El instructor revisa y aprueba ✓
       </div>
     </div>
   </aside>
 </main>
 
-<!-- Modal -->
+<!-- Mission modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" id="modalBox">
     <div class="modal-head">
       <button class="modal-close" onclick="closeModal()">✕ Cerrar</button>
       <div class="modal-code" id="mCode">M00</div>
-      <div class="modal-title" id="mTitle">Título de la misión</div>
+      <div class="modal-title" id="mTitle">Título</div>
       <div class="modal-meta">
         <span><i data-lucide="trending-up" style="width:14px;height:14px"></i> <strong id="mPts">0</strong> pts</span>
         <span><i data-lucide="clock" style="width:14px;height:14px"></i> <span id="mTime">— min</span></span>
@@ -340,24 +341,35 @@
         <h4>Pista</h4>
         <div id="mHintArea"></div>
       </div>
-      <div class="modal-section">
-        <h4>Capturar flag</h4>
-        <form class="flag-form" id="flagForm" onsubmit="return submitFlag(event)">
-          <input id="flagInput" type="text" placeholder="flag{...}" autocomplete="off" required>
-          <button type="submit" id="flagSubmitBtn">
-            <i data-lucide="flag" style="width:16px;height:16px"></i>
-            Enviar
-          </button>
-        </form>
-        <div class="flag-format" id="mFormat">Formato esperado: flag{...}</div>
-        <div class="flag-feedback" id="flagFeedback"></div>
+
+      <!-- Existing evidence (if any) -->
+      <div class="modal-section" id="mEvidenceHistorySection" style="display:none">
+        <h4>Tu evidencia previa</h4>
+        <div class="ev-history" id="mEvidenceHistory"></div>
+      </div>
+
+      <!-- Upload section (hidden if approved) -->
+      <div class="modal-section" id="mUploadSection">
+        <h4 id="mUploadTitle">Subir evidencia (screenshots)</h4>
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" multiple>
+          <i data-lucide="upload-cloud" class="dropzone-icon" style="width:36px;height:36px"></i>
+          <div class="dropzone-title">Arrastra imágenes aquí o click para seleccionar</div>
+          <div class="dropzone-sub">PNG, JPG, WebP, GIF · máx 8MB cada una · puedes subir varias</div>
+        </div>
+        <div class="upload-preview" id="uploadPreview"></div>
+        <textarea class="notes-area" id="notesInput" placeholder="Opcional: notas para el instructor (qué hiciste, comandos usados, etc)"></textarea>
+        <button id="submitEvidenceBtn" class="submit-evidence-btn" onclick="submitEvidence()" disabled>
+          <i data-lucide="send" style="width:18px;height:18px"></i>
+          Enviar evidencia
+        </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
+<div class="lightbox" id="lightbox" onclick="closeLightbox()"><button class="close-x" onclick="closeLightbox()">×</button><img id="lightboxImg" alt=""></div>
 
 <script>
 // ─────────────────────────────────────────────────────────────────────
@@ -368,20 +380,23 @@ const STATE = {
   participantCode: null,
   cohort: 'ATC-FW-CALI-2026-Q1',
   challenges: [],
-  completions: {},   // challenge_id → completion data
-  hintsUsed: {},     // challenge_id → cost paid
+  completions: {},
+  hintsUsed: {},
+  hintRevealed: {},
+  evidenceByChallenge: {},   // challenge_id → array of evidence rows
   currentMission: null,
+  labStartedAt: null,
   timerInterval: null,
   pollInterval: null,
-  labStartedAt: null,
-  hintRevealed: {}   // challenge_id → hint text (cached after API call)
+  supabase: null,
+  config: null,
+  pendingUploads: []  // [{file, status:'queued'|'uploading'|'done'|'error', progress, url, ...}]
 };
 
 // ─────────────────────────────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────────────────────────────
 async function init() {
-  // Try participant from URL (?code=) → localStorage → cookie (via API)
   const urlParams = new URLSearchParams(window.location.search);
   const codeFromUrl = urlParams.get('code');
   if (codeFromUrl) {
@@ -389,6 +404,18 @@ async function init() {
   }
   const storedPid = (() => { try { return localStorage.getItem('fw_pid'); } catch(_) { return null; } })();
   if (storedPid) STATE.participantId = storedPid;
+
+  // Load config (Supabase URL + anon key for direct upload)
+  try {
+    const cfgRes = await fetch('/api/firewall/config');
+    STATE.config = await cfgRes.json();
+    if (STATE.config && STATE.config.supabase_url && STATE.config.supabase_anon_key) {
+      STATE.supabase = window.supabase.createClient(
+        STATE.config.supabase_url,
+        STATE.config.supabase_anon_key
+      );
+    }
+  } catch (e) { console.error('config error', e); }
 
   await loadChallenges();
   const ok = await loadMe();
@@ -405,6 +432,7 @@ async function init() {
   await loadLeaderboard();
   startTimer();
   startPolling();
+  setupDragDrop();
   lucide.createIcons();
 }
 
@@ -439,7 +467,6 @@ async function loadMe() {
     document.getElementById('pScore').textContent = p.total_score || 0;
     document.getElementById('sScore').textContent = p.total_score || 0;
     document.getElementById('sLevel').textContent = p.current_level || 1;
-    document.getElementById('sStatus').textContent = p.status === 'finished' ? 'Finalizado' : 'Activo';
     document.getElementById('welcomeName').textContent = (p.name || 'Operador').split(' ')[0];
     document.getElementById('welcomeCode').textContent = p.code || '—';
 
@@ -461,7 +488,7 @@ async function loadLeaderboard() {
     if (!data.ok) return;
     const el = document.getElementById('leaderboard');
     if (!data.ranking || data.ranking.length === 0) {
-      el.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--fg-3);font-size:.82rem">Nadie ha completado retos todavía. ¡Sé el primero!</div>';
+      el.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--fg-3);font-size:.82rem">Nadie ha enviado evidencias aún. ¡Sé el primero!</div>';
       return;
     }
     el.innerHTML = data.ranking.map(r => {
@@ -476,6 +503,34 @@ async function loadLeaderboard() {
   } catch (e) { console.error('loadLeaderboard', e); }
 }
 
+async function loadEvidenceForChallenge(challengeId) {
+  try {
+    const res = await fetch('/api/firewall/evidence/me/' + encodeURIComponent(challengeId) +
+                            '?participant_id=' + encodeURIComponent(STATE.participantId), { credentials: 'include' });
+    const data = await res.json();
+    if (data.ok) {
+      STATE.evidenceByChallenge[challengeId] = data.evidence || [];
+      return data.evidence || [];
+    }
+  } catch (e) { console.error('loadEvidence', e); }
+  return [];
+}
+
+// Aggregate counters across all challenges
+async function refreshAggregates() {
+  // Count pending + approved across loaded evidence
+  let pending = 0, approved = 0;
+  Object.values(STATE.evidenceByChallenge).forEach(list => {
+    const active = list.find(e => e.status === 'pending_review' || e.status === 'approved');
+    if (active) {
+      if (active.status === 'pending_review') pending++;
+      else if (active.status === 'approved') approved++;
+    }
+  });
+  document.getElementById('sPending').textContent = pending;
+  document.getElementById('sApproved').textContent = approved;
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // RENDER
 // ─────────────────────────────────────────────────────────────────────
@@ -484,6 +539,20 @@ function isUnlocked(ch) {
   return !!STATE.completions[ch.unlock_after];
 }
 function isCompleted(ch) { return !!STATE.completions[ch.id]; }
+function challengeStatus(ch) {
+  const evList = STATE.evidenceByChallenge[ch.id] || [];
+  const active = evList.find(e => e.status === 'pending_review' || e.status === 'approved');
+  if (active) {
+    if (active.status === 'approved') return 'approved';
+    if (active.status === 'pending_review') return 'pending';
+  }
+  // Has any rejected and nothing active?
+  const lastRejected = evList.find(e => e.status === 'rejected');
+  if (lastRejected && !active) return 'rejected';
+  if (isCompleted(ch)) return 'completed';
+  if (isUnlocked(ch)) return 'active';
+  return 'locked';
+}
 
 function renderLevels() {
   const container = document.getElementById('levelsContainer');
@@ -509,13 +578,12 @@ function renderLevels() {
       </div>
       <div class="missions">`;
     group.items.forEach(ch => {
-      const completed = isCompleted(ch);
-      const unlocked = isUnlocked(ch);
-      const stateCls = completed ? 'completed' : (unlocked ? 'active' : 'locked');
-      const stateLabel = completed ? 'Completada' : (unlocked ? 'Disponible' : 'Bloqueada');
+      const st = challengeStatus(ch);
+      const stateLabel = { completed:'Completada', approved:'Aprobada ✓', pending:'En revisión', rejected:'Rechazada — reintenta', active:'Disponible', locked:'Bloqueada' }[st];
       const stageVar = ch.color_token === 'stage-boss' ? '--stage-boss' : `--${ch.color_token}`;
-      html += `<div class="mission ${stateCls}" style="--stage-color: var(${stageVar})" onclick="${unlocked && !completed ? `openMission('${ch.id}')` : 'return false'}">
-        <div class="mission-status ${stateCls}">${stateLabel}</div>
+      const clickable = st !== 'locked';
+      html += `<div class="mission ${st}" style="--stage-color: var(${stageVar})" onclick="${clickable ? `openMission('${ch.id}')` : 'return false'}">
+        <div class="mission-status ${st}">${stateLabel}</div>
         <div class="mission-head">
           <span class="mission-code">${ch.code}</span>
           <div class="mission-icon-wrap"><i data-lucide="${ch.icon}" style="width:16px;height:16px"></i></div>
@@ -534,49 +602,96 @@ function renderLevels() {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// MODAL & FLAG SUBMIT
+// MODAL
 // ─────────────────────────────────────────────────────────────────────
-function openMission(id) {
+async function openMission(id) {
   const ch = STATE.challenges.find(c => c.id === id);
   if (!ch) return;
   STATE.currentMission = ch;
+  STATE.pendingUploads = [];
+  document.getElementById('uploadPreview').innerHTML = '';
+  document.getElementById('notesInput').value = '';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('submitEvidenceBtn').disabled = true;
+
   document.getElementById('mCode').textContent = ch.id + ' · ' + ch.level_name;
   document.getElementById('mTitle').textContent = ch.title;
   document.getElementById('mPts').textContent = ch.base_points;
   document.getElementById('mTime').textContent = ch.estimated_minutes ? ch.estimated_minutes + ' min' : '—';
   document.getElementById('mChapter').textContent = ch.chapter_ref || '—';
   document.getElementById('mDesc').textContent = ch.description_md;
-  const tasksHtml = (ch.tasks || []).map(t => `<li>${escapeHtml(t)}</li>`).join('');
-  document.getElementById('mTasks').innerHTML = tasksHtml;
-  document.getElementById('mFormat').textContent = 'Formato esperado: ' + ch.flag_format_hint;
-  document.getElementById('flagInput').value = '';
-  document.getElementById('flagFeedback').className = 'flag-feedback';
-  document.getElementById('flagFeedback').textContent = '';
+  document.getElementById('mTasks').innerHTML = (ch.tasks || []).map(t => `<li>${escapeHtml(t)}</li>`).join('');
 
-  // Hint area
+  // Hint
   const hintArea = document.getElementById('mHintArea');
   if (STATE.hintRevealed[id]) {
     hintArea.innerHTML = `<div class="hint-box"><div class="hint-head"><i data-lucide="lightbulb" style="width:16px;height:16px"></i> Pista (-${ch.hint_cost} pts)</div><div class="hint-text">${escapeHtml(STATE.hintRevealed[id])}</div></div>`;
   } else if (STATE.hintsUsed[id]) {
-    hintArea.innerHTML = `<div class="hint-locked"><button onclick="loadHint('${id}')">Recuperar pista (ya pagada)</button></div>`;
+    hintArea.innerHTML = `<div class="hint-locked"><button onclick="loadHint('${id}')"><i data-lucide="lightbulb" style="width:14px;height:14px"></i> Recuperar pista (ya pagada)</button></div>`;
   } else {
-    hintArea.innerHTML = `<div class="hint-locked"><div style="margin-bottom:10px;color:var(--fg-3);font-size:.85rem">Desbloquear la pista cuesta <strong style="color:var(--warn)">${ch.hint_cost} puntos</strong> del total del reto.</div><button onclick="loadHint('${id}')"><i data-lucide="lightbulb" style="width:14px;height:14px"></i> Comprar pista por ${ch.hint_cost} pts</button></div>`;
+    hintArea.innerHTML = `<div class="hint-locked"><div style="margin-bottom:10px;color:var(--fg-3);font-size:.85rem">Desbloquear la pista cuesta <strong style="color:var(--warn)">${ch.hint_cost} puntos</strong>.</div><button onclick="loadHint('${id}')"><i data-lucide="lightbulb" style="width:14px;height:14px"></i> Comprar pista por ${ch.hint_cost} pts</button></div>`;
   }
+
+  // Load existing evidence for this challenge
+  const evList = await loadEvidenceForChallenge(id);
+  renderEvidenceHistory(evList);
+
+  // Hide upload section if any active (pending/approved)
+  const hasActive = evList.find(e => e.status === 'pending_review' || e.status === 'approved');
+  const uploadSec = document.getElementById('mUploadSection');
+  const uploadTitle = document.getElementById('mUploadTitle');
+  if (hasActive && hasActive.status === 'approved') {
+    uploadSec.style.display = 'none';
+  } else if (hasActive && hasActive.status === 'pending_review') {
+    uploadSec.style.display = 'none';
+  } else {
+    uploadSec.style.display = 'block';
+    uploadTitle.textContent = evList.length > 0 ? 'Reintentar — sube nueva evidencia' : 'Subir evidencia (screenshots)';
+  }
+
   document.getElementById('modalOverlay').classList.add('show');
   lucide.createIcons();
+}
+
+function renderEvidenceHistory(evList) {
+  const sec = document.getElementById('mEvidenceHistorySection');
+  const hist = document.getElementById('mEvidenceHistory');
+  if (!evList || evList.length === 0) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  hist.innerHTML = evList.map(ev => {
+    const stLabel = { pending_review: 'En revisión', approved: 'Aprobada ✓', rejected: 'Rechazada' }[ev.status] || ev.status;
+    const stCls = ev.status === 'pending_review' ? 'pending' : ev.status;
+    const shots = Array.isArray(ev.screenshots) ? ev.screenshots : [];
+    const thumbsHtml = shots.map(s => `<div class="ev-thumb" onclick="event.stopPropagation();openLightbox('${escapeAttr(s.url)}')"><img src="${escapeAttr(s.url)}" alt=""></div>`).join('');
+    const dateStr = new Date(ev.created_at).toLocaleString('es-CO', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' });
+    let feedbackHtml = '';
+    if (ev.instructor_feedback) {
+      feedbackHtml = `<div class="ev-feedback ${ev.status === 'rejected' ? 'rejected' : 'approved'}"><strong>Instructor:</strong> ${escapeHtml(ev.instructor_feedback)}</div>`;
+    }
+    return `<div class="ev-item ${stCls}">
+      <div class="ev-item-head">
+        <span class="ev-item-status ${stCls}">${stLabel} · +${ev.points_awarded} pts</span>
+        <span class="ev-item-date">${dateStr}</span>
+      </div>
+      <div class="ev-thumbs">${thumbsHtml}</div>
+      ${feedbackHtml}
+    </div>`;
+  }).join('');
 }
 
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('show');
   STATE.currentMission = null;
+  STATE.pendingUploads = [];
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// HINTS
+// ─────────────────────────────────────────────────────────────────────
 async function loadHint(id) {
   try {
     const res = await fetch('/api/firewall/hint', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
       body: JSON.stringify({ participant_id: STATE.participantId, challenge_id: id })
     });
     const data = await res.json();
@@ -586,71 +701,193 @@ async function loadHint(id) {
     document.getElementById('sHints').textContent = Object.keys(STATE.hintsUsed).length;
     openMission(id);
     showToast('Pista desbloqueada · -' + data.cost + ' pts', 'success');
-  } catch (err) {
-    showToast(err.message, 'error');
-  }
+  } catch (err) { showToast(err.message, 'error'); }
 }
 
-async function submitFlag(e) {
-  e.preventDefault();
-  if (!STATE.currentMission) return false;
-  const btn = document.getElementById('flagSubmitBtn');
-  const feedback = document.getElementById('flagFeedback');
-  const flag = document.getElementById('flagInput').value.trim();
-  if (!flag) return false;
-  btn.disabled = true;
-  feedback.className = 'flag-feedback';
-  feedback.textContent = '';
+// ─────────────────────────────────────────────────────────────────────
+// FILE UPLOAD (direct to Supabase Storage)
+// ─────────────────────────────────────────────────────────────────────
+function setupDragDrop() {
+  const dz = document.getElementById('dropzone');
+  const input = document.getElementById('fileInput');
+
+  ['dragenter','dragover'].forEach(ev => {
+    dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dz.classList.add('dragover'); });
+  });
+  ['dragleave','drop'].forEach(ev => {
+    dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dz.classList.remove('dragover'); });
+  });
+  dz.addEventListener('drop', e => {
+    const files = Array.from(e.dataTransfer.files || []);
+    handleFiles(files);
+  });
+  input.addEventListener('change', e => {
+    const files = Array.from(e.target.files || []);
+    handleFiles(files);
+  });
+}
+
+function handleFiles(files) {
+  const valid = files.filter(f => /^image\/(png|jpe?g|webp|gif)$/i.test(f.type));
+  if (valid.length === 0) {
+    showToast('Solo PNG, JPG, WebP o GIF', 'error');
+    return;
+  }
+  valid.forEach(f => {
+    if (f.size > 8 * 1024 * 1024) {
+      showToast(`"${f.name}" supera 8MB`, 'error');
+      return;
+    }
+    const upload = { file: f, status: 'queued', progress: 0, url: null, id: crypto.randomUUID() };
+    STATE.pendingUploads.push(upload);
+    renderUploadPreview();
+    uploadFile(upload);
+  });
+}
+
+async function uploadFile(upload) {
+  if (!STATE.supabase) {
+    upload.status = 'error';
+    upload.error = 'Supabase no configurado';
+    renderUploadPreview();
+    return;
+  }
+  upload.status = 'uploading';
+  renderUploadPreview();
 
   try {
-    const res = await fetch('/api/firewall/flag', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+    const ext = upload.file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
+    const path = `${STATE.participantId}/${STATE.currentMission.id}/${Date.now()}-${upload.id.slice(0,8)}.${ext}`;
+    const { data, error } = await STATE.supabase.storage
+      .from(STATE.config.storage_bucket || 'fw-evidence')
+      .upload(path, upload.file, {
+        cacheControl: '3600',
+        contentType: upload.file.type,
+        upsert: false
+      });
+    if (error) throw error;
+    const { data: pub } = STATE.supabase.storage.from(STATE.config.storage_bucket || 'fw-evidence').getPublicUrl(path);
+    upload.url = pub.publicUrl;
+    upload.status = 'done';
+    upload.progress = 100;
+  } catch (e) {
+    console.error('upload error', e);
+    upload.status = 'error';
+    upload.error = e.message || 'Falló subida';
+  }
+  renderUploadPreview();
+  updateSubmitButton();
+}
+
+function removeUpload(id) {
+  STATE.pendingUploads = STATE.pendingUploads.filter(u => u.id !== id);
+  renderUploadPreview();
+  updateSubmitButton();
+}
+window.removeUpload = removeUpload;
+
+function renderUploadPreview() {
+  const wrap = document.getElementById('uploadPreview');
+  if (STATE.pendingUploads.length === 0) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = STATE.pendingUploads.map(u => {
+    const previewUrl = u.url || (u.file ? URL.createObjectURL(u.file) : '');
+    let badge = '';
+    if (u.status === 'uploading') badge = '<div class="err-tag" style="background:var(--warn)">Subiendo...</div>';
+    else if (u.status === 'error') badge = `<div class="err-tag">${escapeAttr(u.error || 'Error')}</div>`;
+    else if (u.status === 'done') badge = '';
+    return `<div class="upload-thumb ${u.status === 'uploading' ? 'uploading' : ''} ${u.status === 'error' ? 'error' : ''}">
+      <img src="${escapeAttr(previewUrl)}" alt="">
+      <button class="remove-btn" onclick="removeUpload('${u.id}')">×</button>
+      ${badge}
+    </div>`;
+  }).join('');
+}
+
+function updateSubmitButton() {
+  const btn = document.getElementById('submitEvidenceBtn');
+  const allDone = STATE.pendingUploads.length > 0 && STATE.pendingUploads.every(u => u.status === 'done');
+  btn.disabled = !allDone;
+}
+
+async function submitEvidence() {
+  if (!STATE.currentMission) return;
+  const btn = document.getElementById('submitEvidenceBtn');
+  const done = STATE.pendingUploads.filter(u => u.status === 'done');
+  if (done.length === 0) { showToast('Sube al menos 1 screenshot', 'error'); return; }
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader" style="width:16px;height:16px;animation:spin 1s linear infinite"></i> Enviando...';
+
+  const screenshots = done.map(u => ({
+    url: u.url,
+    filename: u.file.name,
+    size_bytes: u.file.size,
+    content_type: u.file.type
+  }));
+
+  try {
+    const res = await fetch('/api/firewall/evidence', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
       body: JSON.stringify({
         participant_id: STATE.participantId,
         challenge_id: STATE.currentMission.id,
-        flag
+        screenshots,
+        notes: document.getElementById('notesInput').value.trim() || null
       })
     });
     const data = await res.json();
-    if (data.ok) {
-      let msg = `✓ Flag correcta · +${data.points_awarded} pts`;
-      if (data.bonuses && data.bonuses.length) {
-        const bonusList = data.bonuses.filter(b => b.delta > 0).map(b => b.code).join(', ');
-        if (bonusList) msg += ' · bonus: ' + bonusList;
-      }
-      feedback.textContent = msg;
-      feedback.className = 'flag-feedback success';
-      showToast('+' + data.points_awarded + ' pts ganados', 'success');
-      // Recargar estado
-      setTimeout(async () => {
-        await loadMe();
-        renderLevels();
-        await loadLeaderboard();
-        closeModal();
-        if (data.is_final) showToast('🏆 ¡Eres el Maestro del Firewall!', 'success');
-      }, 1200);
-    } else {
-      if (data.error === 'wrong_flag') {
-        feedback.textContent = `✗ Flag incorrecta · penalidad ${data.penalty} pts en próximo intento correcto`;
-      } else if (data.error === 'rate_limited') {
-        feedback.textContent = `⏳ Demasiados intentos · espera ${data.retry_after} s`;
-      } else if (data.error === 'already_completed') {
-        feedback.textContent = '⚠ Esta misión ya fue completada';
+    if (!data.ok) {
+      if (data.error === 'already_pending') {
+        showToast('Ya tienes evidencia en revisión para esta misión', 'error');
+      } else if (data.error === 'already_approved') {
+        showToast('Esta misión ya fue aprobada', 'error');
+      } else if (data.error === 'challenge_locked') {
+        showToast('Misión bloqueada — completa la anterior primero', 'error');
       } else {
-        feedback.textContent = '✗ ' + (data.error || 'Error al enviar flag');
+        showToast('Error: ' + (data.error || 'desconocido'), 'error');
       }
-      feedback.className = 'flag-feedback error';
       btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="send" style="width:18px;height:18px"></i> Enviar evidencia';
+      lucide.createIcons();
+      return;
     }
+    showToast(`+${data.points_awarded} pts · evidencia en revisión`, 'success');
+    setTimeout(async () => {
+      await loadMe();
+      await loadEvidenceForChallenge(STATE.currentMission.id);
+      // Reload all evidence aggregates by querying each challenge with completion
+      for (const ch of STATE.challenges) {
+        if (STATE.completions[ch.id] && !STATE.evidenceByChallenge[ch.id]) {
+          await loadEvidenceForChallenge(ch.id);
+        }
+      }
+      refreshAggregates();
+      renderLevels();
+      await loadLeaderboard();
+      closeModal();
+      if (data.is_final) showToast('🏆 ¡BOSS completado! Esperando revisión final.', 'success');
+    }, 1200);
   } catch (err) {
-    feedback.textContent = '✗ Error de red: ' + err.message;
-    feedback.className = 'flag-feedback error';
+    showToast('Error de red: ' + err.message, 'error');
     btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="send" style="width:18px;height:18px"></i> Enviar evidencia';
+    lucide.createIcons();
   }
-  return false;
 }
+window.submitEvidence = submitEvidence;
+
+// ─────────────────────────────────────────────────────────────────────
+// LIGHTBOX
+// ─────────────────────────────────────────────────────────────────────
+function openLightbox(url) {
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+  document.getElementById('lightboxImg').src = '';
+}
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
 
 // ─────────────────────────────────────────────────────────────────────
 // TIMER + POLLING
@@ -667,12 +904,14 @@ function startTimer() {
       String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
   }, 1000);
 }
-
 function startPolling() {
   if (STATE.pollInterval) clearInterval(STATE.pollInterval);
   STATE.pollInterval = setInterval(async () => {
     await loadLeaderboard();
-  }, 5000);
+    // Also refresh participant state to pick up instructor decisions
+    await loadMe();
+    renderLevels();
+  }, 8000);
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -681,7 +920,7 @@ function startPolling() {
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
-
+function escapeAttr(s) { return escapeHtml(s); }
 function showToast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -689,8 +928,14 @@ function showToast(msg, type) {
   setTimeout(() => { t.className = 'toast ' + (type || ''); }, 3500);
 }
 
-// Close modal on ESC or overlay click
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+// Spin animation
+const sty = document.createElement('style');
+sty.textContent = '@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}';
+document.head.appendChild(sty);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeLightbox(); }
+});
 document.getElementById('modalOverlay').addEventListener('click', e => {
   if (e.target.id === 'modalOverlay') closeModal();
 });
