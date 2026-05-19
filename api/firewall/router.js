@@ -662,4 +662,352 @@ function computeElapsedThisChallenge(p, ch) {
   return Math.floor((Date.now() - new Date(p.lab_started_at).getTime()) / 1000);
 }
 
+// ═════════════════════════════════════════════════════════════════════
+// EVIDENCE FLOW — replaces flag-based validation
+// Participants upload screenshots directly to Supabase Storage (with anon key)
+// then call POST /evidence with the URLs to register the submission.
+// Points are awarded instantly; instructor reviews via /instructor/evidence/*.
+// ═════════════════════════════════════════════════════════════════════
+
+// GET /api/firewall/config
+// Public config to enable client-side direct upload to Supabase Storage.
+// Both values are intended to be public (same Supabase URL + anon key the SCE lab uses).
+router.get('/config', (req, res) => {
+  res.json({
+    ok: true,
+    supabase_url: process.env.SUPABASE_URL,
+    supabase_anon_key: process.env.SUPABASE_ANON_KEY,
+    storage_bucket: 'fw-evidence',
+    max_file_size_mb: 8,
+    allowed_mime_types: ['image/png','image/jpeg','image/jpg','image/webp','image/gif']
+  });
+});
+
+// POST /api/firewall/evidence
+// body: { participant_id, challenge_id, screenshots: [{url,filename,size_bytes,content_type}], notes? }
+// - Creates new fw_evidence row (status=pending_review)
+// - Computes points with bonuses (first blood, speed, etc.)
+// - Awards points immediately by inserting fw_completions row
+// - Returns next unlocked challenge
+router.post('/evidence', async (req, res) => {
+  try {
+    const pid = getParticipantIdFromReq(req);
+    const { challenge_id, screenshots, notes } = req.body || {};
+    if (!pid || !challenge_id || !Array.isArray(screenshots) || screenshots.length === 0) {
+      return res.status(400).json({ ok: false, error: 'missing_fields' });
+    }
+
+    // Validate that screenshots all have proper structure and Supabase Storage URLs
+    const validScreenshots = screenshots.filter(s =>
+      s && typeof s.url === 'string' &&
+      s.url.startsWith(process.env.SUPABASE_URL + '/storage/v1/object/public/fw-evidence/')
+    );
+    if (validScreenshots.length === 0) {
+      return res.status(400).json({ ok: false, error: 'invalid_screenshots' });
+    }
+    if (validScreenshots.length > 50) {
+      return res.status(400).json({ ok: false, error: 'too_many_screenshots' });
+    }
+
+    const p = await fetchParticipant(pid);
+    if (!p) return res.status(404).json({ ok: false, error: 'participant_not_found' });
+    if (!p.lab_started_at) return res.status(400).json({ ok: false, error: 'lab_not_started' });
+
+    const ch = await fetchChallenge(challenge_id);
+    if (!ch) return res.status(404).json({ ok: false, error: 'challenge_not_found' });
+
+    // Check unlock
+    const unlocked = await isChallengeUnlocked(pid, ch);
+    if (!unlocked) return res.status(403).json({ ok: false, error: 'challenge_locked' });
+
+    // Check if there's already an active submission (pending or approved)
+    const { data: activeExisting } = await supabase
+      .from('fw_evidence')
+      .select('id, status')
+      .eq('participant_id', pid)
+      .eq('challenge_id', challenge_id)
+      .in('status', ['pending_review','approved'])
+      .maybeSingle();
+    if (activeExisting) {
+      const errCode = activeExisting.status === 'approved' ? 'already_approved' : 'already_pending';
+      return res.status(409).json({
+        ok: false,
+        error: errCode,
+        evidence_id: activeExisting.id
+      });
+    }
+
+    // Compute points with bonuses
+    let points = ch.base_points;
+    const bonuses = [];
+
+    // First blood (no one approved or pending for this challenge yet)
+    const { count: othersCount } = await supabase
+      .from('fw_evidence')
+      .select('participant_id', { count: 'exact', head: true })
+      .eq('challenge_id', challenge_id)
+      .in('status', ['pending_review','approved'])
+      .neq('participant_id', pid);
+    if ((othersCount || 0) === 0) {
+      const bonus = Math.round(ch.base_points * 0.25);
+      points += bonus;
+      bonuses.push({ code: 'FIRST_BLOOD', delta: bonus });
+      await supabase.from('fw_badges')
+        .insert({ participant_id: pid, badge_code: 'FIRST_BLOOD', metadata: { challenge_id } })
+        .select();
+    }
+
+    // Hint cost
+    const { data: hintUsed } = await supabase
+      .from('fw_hints_used')
+      .select('challenge_id')
+      .eq('participant_id', pid)
+      .eq('challenge_id', challenge_id)
+      .maybeSingle();
+    if (hintUsed) {
+      points -= ch.hint_cost;
+      bonuses.push({ code: 'HINT_COST', delta: -ch.hint_cost });
+    } else {
+      const bonus = Math.round(ch.base_points * 0.15);
+      points += bonus;
+      bonuses.push({ code: 'NO_HINTS', delta: bonus });
+    }
+
+    // Speed bonus
+    const elapsed = computeElapsedThisChallenge(p, ch);
+    if (elapsed !== null && ch.estimated_minutes && elapsed < (ch.estimated_minutes * 60 * 0.5)) {
+      const bonus = Math.round(ch.base_points * 0.10);
+      points += bonus;
+      bonuses.push({ code: 'SPEED_BONUS', delta: bonus });
+    }
+
+    points = Math.max(0, points);
+
+    // Insert evidence row
+    const screenshotsClean = validScreenshots.map(s => ({
+      url: s.url,
+      filename: String(s.filename || 'screenshot').slice(0, 120),
+      size_bytes: Number(s.size_bytes) || 0,
+      content_type: String(s.content_type || 'image/png').slice(0, 40),
+      uploaded_at: new Date().toISOString()
+    }));
+
+    const { data: evidence, error: evErr } = await supabase
+      .from('fw_evidence')
+      .insert({
+        participant_id: pid,
+        challenge_id,
+        cohort: p.cohort,
+        screenshots: screenshotsClean,
+        notes_from_participant: notes ? String(notes).slice(0, 1000) : null,
+        status: 'pending_review',
+        points_awarded: points
+      })
+      .select()
+      .single();
+    if (evErr) {
+      console.error('[FW] evidence insert error:', evErr);
+      return res.status(500).json({ ok: false, error: evErr.message });
+    }
+
+    // Insert completion (triggers score recompute)
+    const timeTaken = elapsed ?? 0;
+    const { error: compErr } = await supabase.from('fw_completions').insert({
+      participant_id: pid,
+      challenge_id,
+      attempts_count: 1,
+      points_earned: points,
+      time_taken_seconds: timeTaken,
+      hint_used: !!hintUsed,
+      bonuses,
+      evidence_id: evidence.id
+    });
+    if (compErr) {
+      console.error('[FW] completion insert error:', compErr);
+      // Rollback evidence
+      await supabase.from('fw_evidence').delete().eq('id', evidence.id);
+      return res.status(500).json({ ok: false, error: compErr.message });
+    }
+
+    // Next unlocked
+    let nextUnlocked = null;
+    const { data: nextCh } = await supabase
+      .from('fw_challenges')
+      .select('id, code, title')
+      .eq('unlock_after', challenge_id)
+      .eq('enabled', true)
+      .maybeSingle();
+    if (nextCh) nextUnlocked = nextCh;
+
+    if (ch.is_final) {
+      await supabase.from('fw_badges')
+        .insert({ participant_id: pid, badge_code: 'MASTER_OF_FIREWALL' })
+        .select();
+    }
+
+    res.json({
+      ok: true,
+      evidence_id: evidence.id,
+      points_awarded: points,
+      bonuses,
+      status: 'pending_review',
+      next_unlocked: nextUnlocked,
+      is_final: ch.is_final
+    });
+  } catch (e) {
+    console.error('[FW] evidence error:', e);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// GET /api/firewall/evidence/me/:challenge_id
+// Returns evidence state for this participant + this challenge
+router.get('/evidence/me/:challenge_id', async (req, res) => {
+  try {
+    const pid = getParticipantIdFromReq(req);
+    const { challenge_id } = req.params;
+    if (!pid) return res.status(401).json({ ok: false, error: 'no_session' });
+    const { data, error } = await supabase
+      .from('fw_evidence')
+      .select('id, status, screenshots, points_awarded, instructor_feedback, reviewed_at, reviewed_by, created_at')
+      .eq('participant_id', pid)
+      .eq('challenge_id', challenge_id)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json({ ok: true, evidence: data || [] });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// ═══════════════════════════ INSTRUCTOR ENDPOINTS ════════════════════════════
+
+// GET /api/firewall/instructor/evidence/queue?status=pending_review&cohort=...&limit=50
+// Cola del instructor con filtros
+router.get('/instructor/evidence/queue', requireAdmin, async (req, res) => {
+  try {
+    const cohort = req.query.cohort || DEFAULT_COHORT;
+    const status = req.query.status || 'pending_review';
+    const limit = Math.min(parseInt(req.query.limit || '50', 10), 200);
+
+    let q = supabase
+      .from('fw_evidence_queue')
+      .select('*')
+      .eq('cohort', cohort)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (status !== 'all') q = q.eq('status', status);
+
+    const { data, error } = await q;
+    if (error) throw error;
+
+    // Estadísticas rápidas
+    const { data: counts } = await supabase
+      .from('fw_evidence')
+      .select('status')
+      .eq('cohort', cohort);
+    const stats = { pending_review: 0, approved: 0, rejected: 0 };
+    (counts || []).forEach(r => { stats[r.status] = (stats[r.status] || 0) + 1; });
+
+    res.json({ ok: true, cohort, status, items: data || [], stats });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// POST /api/firewall/instructor/evidence/:id/approve
+// body: { feedback? }
+router.post('/instructor/evidence/:id/approve', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { feedback } = req.body || {};
+    const adminEmail = req.admin?.email || 'admin';
+    const { data, error } = await supabase
+      .from('fw_evidence')
+      .update({
+        status: 'approved',
+        reviewed_by: adminEmail,
+        reviewed_at: new Date().toISOString(),
+        instructor_feedback: feedback ? String(feedback).slice(0, 1000) : null
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    res.json({ ok: true, evidence: data });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// POST /api/firewall/instructor/evidence/:id/reject
+// body: { feedback (required) }
+// - Marks evidence as rejected
+// - Deletes the corresponding fw_completions row (revokes points via trigger)
+// - Allows participant to upload again
+router.post('/instructor/evidence/:id/reject', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { feedback } = req.body || {};
+    if (!feedback || feedback.trim().length < 5) {
+      return res.status(400).json({ ok: false, error: 'feedback_required_min_5_chars' });
+    }
+    const adminEmail = req.admin?.email || 'admin';
+
+    // Get evidence first to find linked completion
+    const { data: ev, error: getErr } = await supabase
+      .from('fw_evidence')
+      .select('id, participant_id, challenge_id')
+      .eq('id', id)
+      .maybeSingle();
+    if (getErr) throw getErr;
+    if (!ev) return res.status(404).json({ ok: false, error: 'not_found' });
+
+    // Delete linked completion to revoke points
+    await supabase
+      .from('fw_completions')
+      .delete()
+      .eq('evidence_id', id);
+
+    // Update evidence status to rejected
+    const { data, error } = await supabase
+      .from('fw_evidence')
+      .update({
+        status: 'rejected',
+        reviewed_by: adminEmail,
+        reviewed_at: new Date().toISOString(),
+        instructor_feedback: String(feedback).slice(0, 1000)
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+
+    // Force recompute of participant score after deletion
+    // (the trigger fires on INSERT, but we deleted manually, so we sync manually)
+    const { data: completions } = await supabase
+      .from('fw_completions')
+      .select('points_earned, challenge_id')
+      .eq('participant_id', ev.participant_id);
+    const totalScore = (completions || []).reduce((s, c) => s + (c.points_earned || 0), 0);
+
+    const { data: maxLevel } = await supabase
+      .from('fw_completions')
+      .select('challenge_id, fw_challenges!inner(level)')
+      .eq('participant_id', ev.participant_id);
+    const lvl = (maxLevel || []).reduce((m, r) => Math.max(m, r.fw_challenges?.level || 1), 1);
+
+    await supabase
+      .from('fw_participants')
+      .update({ total_score: totalScore, current_level: lvl, last_activity_at: new Date().toISOString() })
+      .eq('id', ev.participant_id);
+
+    res.json({ ok: true, evidence: data, new_total_score: totalScore });
+  } catch (e) {
+    console.error('[FW] reject error:', e);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;
